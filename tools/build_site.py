@@ -34,10 +34,13 @@ strip = ('<a class="studio-strip" href="../" aria-label="Keep Off The Track, bac
          'srcset="../assets/keep-off-the-track-masthead.png 1x, ../assets/keep-off-the-track-masthead@2x.png 2x" '
          'width="183" height="34" alt="Keep Off The Track">'
          '<span>A Keep Off The Track game</span></a>\n')
-credit = '    <p class="studio-credit">Synecdoche is a <a href="../">Keep Off The Track</a> game.</p>\n'
+credit = ('    <p class="studio-credit">Synecdoche is a <a href="../">Keep Off The Track</a> game. '
+          '© 2026 Keep Off The Track. All rights reserved. This document may not be reproduced, '
+          'redistributed or used to train AI systems without permission.</p>\n')
 
 assert html.count('</head>') == 1 and html.count('<div class="appbar">') == 1 and html.count('  </main>') == 1
-html = html.replace('</head>', studio_css + '</head>', 1)
+robots = '<meta name="robots" content="noindex, nofollow, noarchive, noimageindex, noai, noimageai">\n'
+html = html.replace('</head>', robots + studio_css + '</head>', 1)
 html = html.replace('<div class="appbar">', strip + '<div class="appbar">', 1)
 html = html.replace('  </main>', credit + '  </main>', 1)
 html = html.replace('<title>Synecdoche GDD</title>', '<title>Synecdoche GDD · Keep Off The Track</title>', 1)
