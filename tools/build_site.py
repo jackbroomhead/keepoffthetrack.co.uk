@@ -12,7 +12,8 @@ from pathlib import Path
 
 site = Path(__file__).resolve().parent.parent
 source = Path(r"C:\Users\jackb\Documents\Game Dev\ModeratorPOC\Quiz UI\Docs\GDD\index.html")
-target = site / "synecdoche" / "index.html"
+# Unlisted address: nothing on the site links here; share the URL directly.
+target = site / "gdd-9ec224eca26d" / "index.html"
 
 html = source.read_text(encoding="utf-8")
 
