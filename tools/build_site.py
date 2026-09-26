@@ -33,7 +33,7 @@ strip = ('<a class="studio-strip" href="../" aria-label="Keep Off The Track, bac
          '<img src="../assets/keep-off-the-track-masthead.png" '
          'srcset="../assets/keep-off-the-track-masthead.png 1x, ../assets/keep-off-the-track-masthead@2x.png 2x" '
          'width="183" height="34" alt="Keep Off The Track">'
-         '<span>A Keep Off The Track game</span></a>\n')
+         '<span>A game by Keep Off The Track</span></a>\n')
 credit = ('    <p class="studio-credit">Synecdoche is a <a href="../">Keep Off The Track</a> game. '
           '© 2026 Keep Off The Track. All rights reserved. This document may not be reproduced, '
           'redistributed or used to train AI systems without permission.</p>\n')
