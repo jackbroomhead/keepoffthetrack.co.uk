@@ -1,0 +1,1335 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Synecdoche GDD · Keep Off The Track</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@600;700;800&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --ground:#EEF2F3; --surface:#FFFFFF; --sunk:#F5F7F8;
+  --ink:#1B2630; --muted:#586772; --faint:#8494A0; --line:#D4DCE0;
+  --accent:#2A7479; --accent-ink:#1E5A5E; --accent-soft:#E0EFEF;
+  --ok:#2F7352; --ok-soft:#E1F0E7; --prov:#8C6118; --prov-soft:#F6EBD6;
+  --open:#6E4690; --open-soft:#EEE5F5; --def:#5E6B75; --def-soft:#E7EBEE;
+  --term-bg:#0F1618; --term-panel:#152024; --term-ink:#D3DDD8; --term-dim:#7F8F8A; --term-hi:#86CFD3; --term-warn:#E2BA6F; --term-line:#2A3A3F;
+  --m-mint:#A9D6D2; --m-coral:#E8A48E; --m-mustard:#E4BE6A; --m-lilac:#B9AEDB; --m-blob:#E3EEF0;
+  --display:"Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body:"Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#11181C; --surface:#172026; --sunk:#1B262D;
+    --ink:#E2E9EC; --muted:#9DABB3; --faint:#71818B; --line:#2B3840;
+    --accent:#6FC0C4; --accent-ink:#9AD8DB; --accent-soft:#1B3236;
+    --ok:#7CC49D; --ok-soft:#1B3127; --prov:#E0B46A; --prov-soft:#33291A; --open:#C4A2E3; --open-soft:#2C2238; --def:#A5B1B9; --def-soft:#242F36;
+    --term-bg:#0A1012; --term-panel:#0F181B; --term-line:#23323A;
+    --m-mint:#4F8F8A; --m-coral:#C4826F; --m-mustard:#C29C4E; --m-lilac:#877CB3; --m-blob:#1B2A30;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#11181C; --surface:#172026; --sunk:#1B262D;
+  --ink:#E2E9EC; --muted:#9DABB3; --faint:#71818B; --line:#2B3840;
+  --accent:#6FC0C4; --accent-ink:#9AD8DB; --accent-soft:#1B3236;
+  --ok:#7CC49D; --ok-soft:#1B3127; --prov:#E0B46A; --prov-soft:#33291A; --open:#C4A2E3; --open-soft:#2C2238; --def:#A5B1B9; --def-soft:#242F36;
+  --term-bg:#0A1012; --term-panel:#0F181B; --term-line:#23323A;
+  --m-mint:#4F8F8A; --m-coral:#C4826F; --m-mustard:#C29C4E; --m-lilac:#877CB3; --m-blob:#1B2A30;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font:400 16px/1.6 var(--body);padding-inline:16px;}
+a{color:var(--accent-ink);text-underline-offset:2px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+p{margin:0}
+.label{font:600 11.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* App bar: the Synecdoche internal-docs chrome */
+.appbar{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-block:14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font:700 15px/1 var(--display)}
+.mark{width:22px;height:22px;border-radius:6px;background:var(--accent);position:relative;flex:none}
+.mark::after{content:"";position:absolute;inset:6px 6px 6px 11px;border-radius:2px;background:var(--surface)}
+.crumbs{font:500 13px/1.3 var(--body);color:var(--muted)}
+.appbar .spacer{flex:1}
+
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:32px;padding-block:28px 64px}
+@media (min-width:1000px){ .shell{grid-template-columns:200px minmax(0,1fr)} }
+nav.toc{display:none}
+@media (min-width:1000px){
+  nav.toc{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start}
+  nav.toc ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:2px}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font:500 14px/1.3 var(--body)}
+  nav.toc a:hover{background:var(--surface);color:var(--ink)}
+  nav.toc a.dev{font-family:var(--mono);font-size:13px}
+}
+main{min-width:0;max-width:820px;display:grid;gap:28px}
+
+/* Document sections */
+section{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(20px,4vw,36px);display:grid;gap:18px;min-width:0}
+section > header{display:grid;gap:6px}
+h2{font-size:clamp(22px,3vw,27px);line-height:1.2;font-weight:700}
+h3{font-size:17px;line-height:1.3;font-weight:700}
+.lede{color:var(--muted);max-width:65ch}
+.prose{display:grid;gap:12px;max-width:66ch;align-content:start}
+.closer{margin-left:1.1em;padding-left:12px;border-left:2px solid var(--accent);color:var(--ink);font-style:italic}
+ul.tight{margin:0;padding-left:1.1em;display:grid;gap:6px}
+ul.tight li::marker{color:var(--accent)}
+
+/* Status chips (the document's own decision legend) */
+.st{display:inline-block;font:600 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:4px 7px 3px;border-radius:999px;vertical-align:2px;white-space:nowrap}
+.st-ok{color:var(--ok);background:var(--ok-soft)}
+.st-prov{color:var(--prov);background:var(--prov-soft)}
+.st-open{color:var(--open);background:var(--open-soft)}
+.st-def{color:var(--def);background:var(--def-soft)}
+
+/* Title block */
+.title{background:transparent;border:0;padding:8px 0 4px;gap:18px}
+.title h1{font-size:clamp(46px,9vw,84px);line-height:.95;font-weight:800;letter-spacing:-.035em}
+.title h1 span{color:var(--accent)}
+.hook{font:500 clamp(18px,2.4vw,22px)/1.45 var(--body);max-width:40ch}
+.facts{display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0}
+.facts div{flex:1 1 150px;background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-content:start}
+.facts dt{font:600 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;font-size:14.5px;line-height:1.4}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13.5px;color:var(--muted)}
+
+.rhythm{font:700 clamp(19px,2.6vw,24px)/1.3 var(--display);color:var(--accent-ink);border-left:3px solid var(--accent);padding:2px 0 2px 16px}
+
+/* key/value blocks */
+.kv{display:grid;gap:0;border-top:1px solid var(--line)}
+.kv > div{display:grid;grid-template-columns:1fr;gap:4px;padding:12px 0;border-bottom:1px solid var(--line)}
+@media (min-width:640px){ .kv > div{grid-template-columns:150px 1fr;gap:16px} }
+.kv dt{font:600 14px/1.45 var(--display)}
+.kv dd{margin:0;color:var(--ink)}
+
+/* Pillars */
+.pillars{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:520px){ .pillars{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:1100px){ .pillars{grid-template-columns:repeat(4,1fr)} }
+.pillar{background:var(--sunk);border-radius:12px;padding:16px;display:grid;gap:8px;align-content:start}
+.pillar .n{font:600 12px/1 var(--mono);color:var(--accent)}
+.pillar p{font-size:15px}
+.pillar .test{font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.layer{border:1px dashed var(--accent);border-radius:12px;padding:14px 16px;display:grid;gap:6px;background:var(--accent-soft)}
+
+/* Pixel-art city behind the monitor ("I caused that" mock-up) */
+.citycam{margin:0;display:grid;gap:10px}
+#city{display:block;width:100%;max-width:720px;height:auto;aspect-ratio:16/9;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:10px;background:#1c2830}
+.citycam figcaption{display:grid;gap:8px}
+.states{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.states button{font:600 12px/1 var(--mono);padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.states button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+#city-cap{font-size:14.5px;color:var(--muted);min-height:1.6em}
+
+/* Four mini-games + botnet modes */
+.games{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:1100px){ .games{grid-template-columns:1fr 2.4fr 1fr} .games .afternoon{grid-column:auto} }
+.afternoon{border:1px dashed var(--line);border-radius:14px;padding:10px;display:grid;gap:8px;align-content:start}
+.aft-head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:2px 4px}
+.aft-note{font-size:13px;color:var(--muted)}
+.aft-split{display:grid;grid-template-columns:1fr;gap:6px}
+@media (min-width:640px){ .aft-split{grid-template-columns:1fr auto 1fr;align-items:stretch} }
+.afternoon .game{background:var(--sunk)}
+.aft-arrow{display:grid;justify-items:center;align-content:center;gap:2px;color:var(--accent-ink);padding:2px 4px}
+.aft-arrow span{font:700 20px/1 var(--display)}
+.aft-arrow small{font:600 10px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;max-width:9ch}
+@media (max-width:639px){ .aft-arrow span{transform:rotate(90deg)} }
+.game{background:var(--sunk);border-radius:12px;padding:14px;display:grid;gap:6px;align-content:start}
+.game .when{font:600 11px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.game h3{font-size:16px}
+.game p{font-size:14px}
+.gate{justify-self:start;font:600 11px/1 var(--mono);padding:5px 8px 4px;border-radius:4px;margin-top:2px}
+.gate.corp{background:var(--accent-soft);color:var(--accent-ink);border-radius:999px}
+.gate.hack{background:var(--term-bg);color:var(--term-hi);border:1px solid var(--term-line)}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.mode{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:8px;align-content:start}
+.mode .mh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 8px;align-items:center}
+.mode p{font-size:14px}
+.bars{display:grid;gap:6px}
+.bars span{display:flex;gap:8px;align-items:baseline;font-size:13.5px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:7px 10px}
+.bars b{color:var(--ink);font:700 13.5px/1.2 var(--display);min-width:82px}
+.mode ul.tight{font-size:14px}
+.mode.deferred{border-style:dashed;background:transparent;opacity:.78}
+.mode.deferred h3{color:var(--muted)}
+.outcomes{display:grid;gap:6px;border-top:1px dashed var(--line);padding-top:8px}
+.outcomes p{font-size:13.5px;color:var(--muted)}
+.outcomes b{font:600 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 6px 2px;border-radius:4px;margin-right:4px}
+.outcomes .win{color:var(--ok);background:var(--ok-soft)}
+.outcomes .lose{color:var(--open);background:var(--open-soft)}
+.mode .ref{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+
+/* AI Architecture cards */
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.agent{background:var(--sunk);border-radius:12px;padding:14px;display:grid;gap:6px;align-content:start}
+.agent h3{font-size:15px}
+.agent p{font-size:14px}
+.agent .sees{font-weight:700;color:var(--ink)}
+.agent .fires{font:600 11px/1.35 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--accent-ink)}
+
+/* Day flow */
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;list-style:none;margin:0;padding:0}
+.flow li{flex:1 1 150px;background:var(--sunk);border-radius:10px;padding:12px 14px;display:grid;gap:4px;position:relative}
+.flow li b{font:700 15px/1.2 var(--display)}
+.flow li span{font-size:13.5px;color:var(--muted)}
+.flow li .t{font:500 12px/1 var(--mono);color:var(--accent-ink)}
+
+/* Day-gate strip */
+.gates-wrap{overflow-x:auto;margin-inline:-4px;padding:4px}
+.gates{display:grid;grid-template-columns:repeat(7,minmax(92px,1fr));min-width:680px;position:relative;list-style:none;margin:0;padding:0}
+.gates::before{content:"";position:absolute;left:12px;right:12px;top:31px;height:2px;background:var(--line)}
+.gates li{display:grid;gap:6px;justify-items:start;padding-right:8px;position:relative}
+.gates .d{font:600 12px/1 var(--mono);color:var(--muted);height:16px}
+.gates .dot{width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);margin-left:6px;position:relative;z-index:1}
+.gates li.now .dot{background:var(--accent)}
+.gates li.later .dot{border-style:dashed;border-color:var(--faint)}
+.gates .g{font-size:13px;line-height:1.35}
+
+/* Mock moderation UI (corporate Synecdoche) */
+.mock{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:720px){ .mock{grid-template-columns:1.1fr 1fr} }
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--sunk);padding:14px;display:grid;gap:10px;align-content:start}
+.panel .ph{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.who{display:flex;gap:10px;align-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent-soft),var(--line));flex:none}
+.who b{font:600 14px/1.2 var(--body);display:block}
+.who small{font:400 12px/1.2 var(--mono);color:var(--muted)}
+.post{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:15px}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font:600 13px/1 var(--body);padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.btn.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);color:var(--accent-ink)}
+.btn.ghost{background:transparent;border-style:dashed}
+.hist{display:grid;gap:8px}
+.hist .item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;display:grid;gap:4px}
+.hist .item small{font:500 11.5px/1 var(--mono);color:var(--muted)}
+.verdict{font-size:14.5px;background:var(--ok-soft);color:var(--ink);border-radius:10px;padding:10px 12px}
+.verdict b{color:var(--ok)}
+
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+ol.steps li{counter-increment:s;background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+ol.steps li::before{content:counter(s);font:600 12px/1 var(--mono);color:var(--accent);display:block;margin-bottom:4px}
+ol.steps li b{display:block;color:var(--ink);font:700 14px/1.2 var(--display);margin-bottom:2px}
+
+.two{display:grid;gap:18px;grid-template-columns:1fr}
+@media (min-width:720px){ .two{grid-template-columns:1fr 1fr} }
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px/1.3 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+tr.done td{color:var(--ok)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.rule{font:600 15px/1.45 var(--display);background:var(--sunk);border-radius:10px;padding:12px 14px}
+.rule .cut{display:block;margin-top:6px;font:400 14px/1.5 var(--body);color:var(--muted)}
+.rule .cut b{color:var(--ink)}
+
+/* ===== Hacker / terminal layer ===== */
+.breach{font:500 12.5px/1.4 var(--mono);color:var(--faint);text-align:center;white-space:pre;overflow:hidden;user-select:none}
+section.term{background:var(--term-bg);border:1px solid var(--term-line);border-radius:6px;color:var(--term-ink);font-family:var(--mono);font-size:14px;line-height:1.6}
+section.term h2,section.term h3{font-family:var(--mono);letter-spacing:0}
+section.term h2{font-size:clamp(18px,2.4vw,22px);font-weight:600;color:var(--term-hi)}
+section.term h3{font-size:14px;font-weight:600;color:var(--term-warn);text-transform:uppercase;letter-spacing:.06em}
+section.term h3::before{content:"## "; color:var(--term-dim)}
+section.term .lede,section.term .dim{color:var(--term-dim)}
+section.term a{color:var(--term-hi)}
+section.term .label{color:var(--term-dim)}
+.tbar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--term-line);padding-bottom:10px;color:var(--term-dim);font-size:12px}
+.tbar b{color:var(--term-warn);font-weight:600}
+pre.ascii{margin:0;white-space:pre;overflow-x:auto;background:var(--term-panel);border:1px solid var(--term-line);padding:12px 14px;font:400 12.5px/1.5 var(--mono);color:var(--term-ink)}
+pre.ascii .h{color:var(--term-hi)} pre.ascii .w{color:var(--term-warn)} pre.ascii .d{color:var(--term-dim)}
+section.term .tbl-wrap{border:1px solid var(--term-line);border-radius:0}
+section.term table{font-size:13px}
+section.term th{background:var(--term-panel);color:var(--term-dim);border-bottom:1px solid var(--term-line)}
+section.term td{border-bottom:1px solid var(--term-line)}
+section.term td:first-child{color:var(--term-hi);white-space:nowrap}
+section.term ul.tight li::marker{content:"> ";color:var(--term-dim)}
+section.term ul.tight{padding-left:1.4em}
+.tsent{border-left:2px solid var(--term-warn);padding:6px 0 6px 14px;color:var(--term-ink)}
+.tsent b{color:var(--term-warn);font-weight:600}
+section.term .st{background:transparent;border:1px solid currentColor}
+section.term .st-prov{color:var(--term-warn)}
+section.term .st-open{color:#C7A6E6}
+section.term .st-ok{color:#8FD1A8}
+section.term code{color:var(--term-hi)}
+code{font-family:var(--mono);font-size:.9em}
+
+/* ===== Corporate Memphis layer (restrained) ===== */
+.title-grid{display:grid;gap:18px;align-items:center;grid-template-columns:1fr}
+@media (min-width:640px){ .title-grid{grid-template-columns:minmax(0,1fr) minmax(0,.9fr)} }
+.title-grid > div{display:grid;gap:18px}
+.memphis{width:100%;max-width:420px;height:auto;justify-self:center;overflow:visible}
+.memphis *{transform-box:fill-box}
+.pillar .icon{width:48px;height:48px}
+.pillar .row{display:flex;justify-content:space-between;align-items:center}
+
+.duo{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:720px){ .duo{grid-template-columns:1fr 1fr} }
+.duo figure{margin:0;display:grid;gap:10px;align-content:start}
+.duo figcaption{display:grid;gap:6px;font-size:14.5px}
+.duo figcaption b{font:700 15px/1.3 var(--display)}
+.corp-card{background:var(--sunk);border-radius:16px;padding:18px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;min-height:150px}
+.corp-card .ring{width:74px;height:74px}
+.corp-card .msgs{display:grid}
+.corp-card .msgs > .msg{grid-area:1/1}
+.corp-card .msg{display:grid;gap:4px;align-content:center}
+.corp-card .good{opacity:0}
+.corp-card .ring .pc-good{opacity:0}
+.corp-card .ring .arc{stroke:var(--prov);stroke-dashoffset:51}
+.corp-card .msg b{font:700 16px/1.25 var(--display)}
+.corp-card .msg small{color:var(--muted);font-size:13px}
+.corp-card .pill{justify-self:start;margin-top:4px;font:600 12px/1 var(--body);padding:7px 12px;border-radius:999px;background:var(--accent);color:var(--surface)}
+.corp-card .wave{width:54px;height:62px;grid-row:span 1}
+.hack-card{background:var(--term-bg);border:1px solid var(--term-line);border-radius:4px;padding:14px 16px;min-height:150px;font:400 13px/1.7 var(--mono);color:var(--term-ink);display:grid;align-content:start}
+.hack-card .tl{display:block;white-space:nowrap;overflow:hidden;width:calc(var(--n) * 1ch)}
+.hack-card .tl.h{color:var(--term-hi)} .hack-card .tl.w{color:var(--term-warn)}
+.hack-card .dimline{color:var(--term-dim)}
+
+@media (prefers-reduced-motion:no-preference){
+  .memphis .bob{animation:bob 6s ease-in-out infinite}
+  .memphis .bob2{animation:bob 7.5s ease-in-out -2s infinite}
+  .memphis .spin{animation:spin 18s linear infinite;transform-origin:center}
+  .memphis .sway{animation:sway 5s ease-in-out infinite;transform-origin:50% 100%}
+  .memphis .queue{animation:queue 6s cubic-bezier(.65,0,.35,1) infinite}
+  .memphis .arm{animation:tap 6s ease-in-out infinite;transform-origin:0% 0%}
+  .memphis .kpi{animation:kpi 6s ease-out infinite;transform-origin:center}
+  .memphis .squig{stroke-dasharray:90;animation:draw 6s ease-in-out infinite}
+  .pillar .icon .bob{animation:bob 5s ease-in-out infinite}
+  .pillar:hover .icon{animation:nudge .5s ease}
+  .corp-card .ring .arc{animation:mood 11s cubic-bezier(.45,0,.25,1) infinite}
+  .corp-card .good,.corp-card .ring .pc-good{animation:goodOn 11s ease infinite}
+  .corp-card .bad,.corp-card .ring .pc-bad{animation:badOn 11s ease infinite}
+  .corp-card .bad .pill{animation:pillPulse 11s ease infinite}
+  .corp-card .wave .hand{animation:wave 2.4s ease-in-out infinite;transform-origin:0% 100%}
+  .hack-card .tl{animation-duration:9s;animation-iteration-count:infinite;animation-timing-function:steps(28,end)}
+  .hack-card .t1{animation-name:t1} .hack-card .t2{animation-name:t2} .hack-card .t3{animation-name:t3} .hack-card .t4{animation-name:t4}
+}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes queue{0%,62%{transform:translateY(0)}78%,100%{transform:translateY(-36px)}}
+@keyframes tap{0%,40%,70%,100%{transform:rotate(0)}52%{transform:rotate(-4deg)}58%{transform:rotate(1.5deg)}}
+@keyframes kpi{0%,54%{opacity:0;transform:scale(.6) translateY(6px)}60%{opacity:1;transform:scale(1.06)}64%,88%{opacity:1;transform:scale(1)}96%,100%{opacity:0;transform:scale(1)}}
+@keyframes draw{0%{stroke-dashoffset:90}40%,80%{stroke-dashoffset:0}100%{stroke-dashoffset:-90}}
+@keyframes nudge{0%,100%{transform:rotate(0)}30%{transform:rotate(-8deg)}60%{transform:rotate(5deg)}}
+@keyframes mood{0%{stroke-dashoffset:176;stroke:var(--accent)}14%,40%{stroke-dashoffset:4;stroke:var(--accent)}56%,92%{stroke-dashoffset:51;stroke:var(--prov)}100%{stroke-dashoffset:176;stroke:var(--accent)}}
+@keyframes goodOn{0%,42%{opacity:1}48%,94%{opacity:0}100%{opacity:1}}
+@keyframes badOn{0%,46%{opacity:0}54%,92%{opacity:1}98%,100%{opacity:0}}
+@keyframes pillPulse{0%,62%{transform:scale(1)}66%{transform:scale(1.06)}70%,100%{transform:scale(1)}}
+@keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-18deg)}50%{transform:rotate(8deg)}75%{transform:rotate(-12deg)}}
+@keyframes t1{0%{width:0}10%,86%{width:calc(var(--n)*1ch)}92%,100%{width:0}}
+@keyframes t2{0%,16%{width:0}28%,86%{width:calc(var(--n)*1ch)}92%,100%{width:0}}
+@keyframes t3{0%,34%{width:0}46%,86%{width:calc(var(--n)*1ch)}92%,100%{width:0}}
+@keyframes t4{0%,52%{width:0}64%,86%{width:calc(var(--n)*1ch)}92%,100%{width:0}}
+
+/* Corporate scroll behaviour: cards ease up softly (JS adds .rise-on; without it everything is visible) */
+.rise-on .rise{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rise-on .rise.in{opacity:1;transform:none}
+
+/* Terminal animation: cursor + scroll cascade (JS adds .js-anim; without it everything is visible) */
+.cursor{display:inline-block;width:.58em;height:1.05em;background:var(--term-hi);vertical-align:-.16em;margin-left:2px;animation:blink 1.05s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.prompt{color:var(--term-ink);border-top:1px solid var(--term-line);padding-top:12px}
+.prompt .ps{color:#8FD1A8}.prompt .pd{color:var(--term-hi)}
+.js-anim .reveal{opacity:0;transform:translateY(5px);transition:opacity .28s ease,transform .28s ease}
+.js-anim .reveal.on{opacity:1;transform:none}
+.js-anim .stag{opacity:0;transition:opacity .22s ease}
+.js-anim .stag.on{opacity:1}
+pre.ascii .ln{display:inline}
+.ghost{visibility:hidden}
+@media (prefers-reduced-motion:reduce){ .cursor{animation:none} }
+
+footer.src{font-size:13.5px;color:var(--muted);display:grid;gap:6px;padding:0 4px}
+
+@media (prefers-reduced-motion:no-preference){
+  nav.toc a{transition:background .15s,color .15s}
+}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff;padding:0;font-size:10.5pt;line-height:1.45}
+  .appbar,nav.toc,.breach{display:none}
+  .shell{display:block;padding:0}
+  main{max-width:none;gap:10px}
+  section{border:0;border-radius:0;padding:6px 0;break-inside:auto}
+  section.title{padding-top:0}
+  .pillar,.panel,.flow li,ol.steps li,.layer,.tbl-wrap,.kv > div,.gates-wrap{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  section.term{padding:12px;border-radius:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .gates-wrap{overflow:visible}
+  .gates{min-width:0}
+  a{color:inherit;text-decoration:none}
+  .cursor,.prompt{display:none}
+  .ghost{visibility:visible}
+  .js-anim .reveal,.js-anim .stag,.rise-on .rise{opacity:1!important;transform:none!important}
+  .memphis{max-width:260px}
+  *{animation:none!important}
+}
+
+/* ===== Trimmed Down Version: generated by make_trimmed_version.py, which adds class="trimmed" to <html> ===== */
+.only-trimmed,.trim-banner{display:none}
+html.trimmed .trim{display:none!important}
+html.trimmed .only-trimmed{display:block}
+.only-trimmed-inline{display:none}
+html.trimmed .only-trimmed-inline{display:inline}
+html.trimmed .trim-banner{display:block;max-width:1180px;margin:10px auto 0;padding:8px 12px;border-radius:8px;background:var(--prov-soft);color:var(--prov);font:600 12px/1.4 var(--mono)}
+@media print{ html.trimmed .trim-banner{display:none} }
+
+/* ===== PDF submission cut: light palette always, decoration off, tighter type ===== */
+@media print{
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"]{
+    color-scheme: light;
+    --ground:#FFFFFF; --surface:#FFFFFF; --sunk:#F3F6F7;
+    --ink:#1B2630; --muted:#4F5E69; --faint:#7B8B96; --line:#D4DCE0;
+    --accent:#2A7479; --accent-ink:#1E5A5E; --accent-soft:#E0EFEF;
+    --ok:#2F7352; --ok-soft:#E1F0E7; --prov:#8C6118; --prov-soft:#F6EBD6;
+    --open:#6E4690; --open-soft:#EEE5F5; --def:#5E6B75; --def-soft:#E7EBEE;
+    --term-bg:#FFFFFF; --term-panel:#F3F6F7; --term-ink:#1B2630; --term-dim:#4F5E69; --term-hi:#1E5A5E; --term-warn:#8C6118; --term-line:#C9D2D7;
+  }
+  @page{size:A4;margin:10mm 11mm}
+  body{font-size:8.6pt;line-height:1.36}
+  .memphis,.citycam,.duo,.pillar .icon,.pillar .test,.hack-card,.panel .ph .st,.prompt,.breach{display:none!important}
+  .mock:has(.hack-card){display:block}
+  .mock:has(.hack-card) > .panel{display:none}
+  main{gap:6px}
+  section{padding:4px 0;gap:6px}
+  section > header{gap:2px}
+  .title{gap:6px}
+  .title h1{font-size:26pt}
+  .hook{font-size:10.5pt;max-width:none}
+  .title-grid{display:block}
+  h2{font-size:13pt}
+  h3{font-size:10pt}
+  .label{font-size:7pt}
+  .lede,.prose{max-width:none}
+  .facts div{padding:4px 7px}
+  .facts dd,.facts dt{font-size:7.6pt}
+  .rhythm{font-size:10.5pt;padding-left:8px}
+  .kv > div{grid-template-columns:110px 1fr;gap:8px;padding:4px 0}
+  .kv dt{font-size:8.6pt}
+  .pillars,.games,.agents{grid-template-columns:repeat(3,1fr);gap:5px}
+  .games{grid-template-columns:1fr 2.2fr 1fr}
+  .modes{grid-template-columns:repeat(3,1fr);gap:5px}
+  .pillar,.game,.agent,.mode,.panel,.afternoon,ol.steps li,.flow li{padding:6px 8px;border-radius:6px}
+  .pillar p,.game p,.agent p,.mode p,.mode ul.tight,.outcomes p,.bars span{font-size:8pt}
+  .flow li span,ol.steps li{font-size:7.8pt}
+  ol.steps{grid-template-columns:repeat(7,1fr);gap:4px}
+  .flow{gap:4px}
+  .mock{grid-template-columns:1fr 1fr;gap:6px}
+  .post,.hist .item,.verdict{padding:5px 7px;font-size:8pt}
+  .btn{padding:3px 6px;font-size:7.5pt}
+  .gates .g{font-size:7.4pt}
+  .two{gap:10px}
+  table{font-size:7.8pt}
+  th,td{padding:3px 6px}
+  ul.tight{gap:2px}
+  section.term{font-size:8.2pt;padding:8px 0 0;border:0;border-top:2px solid var(--ink);-webkit-print-color-adjust:economy;print-color-adjust:economy}
+  section.term .tbl-wrap,pre.ascii{border-color:var(--term-line)}
+  pre.ascii{font-size:7.4pt;padding:6px 8px}
+  .tsent{padding:3px 0 3px 8px}
+  footer.src{font-size:7.4pt}
+  section.term ul.tight{column-count:2;column-gap:14px;display:block}
+  section.term ul.tight li{break-inside:avoid;margin-bottom:2px}
+  #open thead{display:none}
+  #open tbody{display:grid;grid-template-columns:1fr 1fr;column-gap:10px}
+  #open tr{display:flex;justify-content:space-between;gap:6px;border-bottom:1px solid var(--line)}
+  #open td{border:0;padding:2px 0}
+  #scope .kv dd,#ai .lede,#look .lede{font-size:inherit}
+  /* readable sizes + flowing sections (grid sections can't split across pages) */
+  body{font-size:10pt;line-height:1.4}
+  section{display:block}
+  section > * + *{margin-top:7px}
+  section > header + *{margin-top:8px}
+  h2{font-size:14.5pt} h3{font-size:11pt}
+  .label{font-size:7.8pt}
+  .hook{font-size:11.5pt}
+  .facts dd,.facts dt{font-size:8.6pt}
+  .kv > div{grid-template-columns:120px 1fr}
+  .kv dt{font-size:9.6pt}
+  .pillar p,.game p,.agent p,.mode p,.mode ul.tight,.outcomes p,.bars span{font-size:9.2pt}
+  .flow li span,ol.steps li,.gates .g{font-size:8.8pt}
+  .post,.hist .item,.verdict{font-size:9.2pt}
+  .btn{font-size:8.4pt}
+  table{font-size:9pt}
+  section.term{font-size:9.4pt}
+  pre.ascii{font-size:8.4pt}
+  footer.src{font-size:8.4pt}
+  .agents{grid-template-columns:repeat(3,1fr)}
+  .pillars{grid-template-columns:repeat(4,1fr)}
+  ol.steps{grid-template-columns:repeat(4,1fr)}
+  /* botnet modes: two columns, compact metrics, chips on the title line */
+  .modes{grid-template-columns:1fr 1fr;gap:8px}
+  .mode.deferred{grid-column:1/-1}
+  .mode .mh{flex-wrap:nowrap}
+  .bars{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .bars span{display:block;padding:4px 6px}
+  .bars b{display:block;min-width:0;margin-bottom:1px}
+  .mode .ref{padding-top:4px}
+  .kv{display:block}
+  .kv > div{break-inside:avoid}
+  .legend{font-size:8.2pt;gap:4px 10px}
+  /* no orphan card; only small units refuse to split, big blocks may flow */
+  .agents .agent:last-child:nth-child(3n+1){grid-column:1/-1}
+  .tbl-wrap,.gates-wrap,.kv > div,.panel,.afternoon{break-inside:auto}
+  .pillar,.game,.agent,.mode,.flow li,ol.steps li,tr,.bars span,.post,.hist .item{break-inside:avoid}
+  h2,h3,section > header{break-after:avoid}
+  @page{size:A4;margin:9mm 10mm}
+  section.term{font-size:8.9pt;line-height:1.36}
+  pre.ascii{font-size:7.9pt}
+}
+</style>
+
+<style>
+/* Keep Off The Track studio credit (hosted copy only) */
+.studio-strip{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding-block:10px 4px;text-decoration:none;color:var(--muted)}
+.studio-strip img{display:block;height:34px;width:auto;image-rendering:pixelated;border-radius:2px}
+.studio-strip span{font:600 11.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.studio-strip:hover span{color:var(--ink)}
+.studio-credit{font-size:13.5px;color:var(--muted);padding:4px 4px 0}
+.studio-credit a{color:var(--accent-ink)}
+@media print{ .studio-strip,.studio-credit{display:none!important} }
+</style>
+</head>
+<body>
+
+<a class="studio-strip" href="../" aria-label="Keep Off The Track, back to the studio homepage"><img src="../assets/keep-off-the-track-masthead.png" srcset="../assets/keep-off-the-track-masthead.png 1x, ../assets/keep-off-the-track-masthead@2x.png 2x" width="183" height="34" alt="Keep Off The Track"><span>A Keep Off The Track game</span></a>
+<div class="appbar">
+  <div class="brand"><span class="mark" aria-hidden="true"></span>Synecdoche</div>
+  <div class="crumbs">Design Documents / Game Design Document</div>
+  <div class="spacer"></div>
+  <span class="st st-prov">First draft · 23 Sep 2026</span>
+</div>
+
+<div class="shell">
+  <nav class="toc" aria-label="Sections">
+    <div class="label">Contents</div>
+    <ol>
+      <li><a href="#summary">Executive summary</a></li>
+      <li><a href="#pillars">Pillars</a></li>
+      <li><a href="#play">Game Mechanics</a></li>
+      <li><a href="#look">Look &amp; feel</a></li>
+      <li><a href="#ai">AI Architecture</a></li>
+      <li><a href="#scope">Scope &amp; ship plan</a></li>
+      <li><a class="dev" href="#tech">technical_strategy</a></li>
+      <li class="trim"><a href="#open">Open decisions</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- TITLE -->
+    <section class="title" aria-labelledby="t">
+      <div class="label">Game Design Document · Capstone · Assignment 1</div>
+      <h1 id="t">Synecdoche<span>.</span></h1>
+      <div class="title-grid">
+      <div>
+      <p class="hook">A content moderator in a Northern European city spends the morning judging social-media posts under rules that keep changing. In the afternoon they work, investigate information networks and live with the physical consequences of those decisions.</p>
+      </div>
+      <svg class="memphis" viewBox="0 0 360 290" role="img" aria-label="Flat corporate-style illustration: a moderator at a desk taps Escalate on a queue of posts while a cheerful accuracy badge pops up.">
+        <defs><clipPath id="scr"><rect x="176" y="84" width="128" height="68" rx="6"/></clipPath></defs>
+        <path d="M40 150 C30 80 110 40 180 55 C260 70 330 90 320 170 C312 240 230 262 160 255 C80 248 50 215 40 150Z" fill="var(--m-blob)"/>
+        <circle class="bob" cx="58" cy="62" r="16" fill="var(--m-mustard)"/>
+        <polygon class="spin" points="300,24 324,62 280,60" fill="var(--m-coral)"/>
+        <path class="squig" d="M244 250 q10 -12 20 0 t20 0 t20 0 t20 0" stroke="var(--m-lilac)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <g fill="var(--ink)" opacity=".22"><circle cx="22" cy="200" r="2.5"/><circle cx="32" cy="200" r="2.5"/><circle cx="42" cy="200" r="2.5"/><circle cx="22" cy="210" r="2.5"/><circle cx="32" cy="210" r="2.5"/><circle cx="42" cy="210" r="2.5"/><circle cx="22" cy="220" r="2.5"/><circle cx="32" cy="220" r="2.5"/><circle cx="42" cy="220" r="2.5"/></g>
+        <ellipse cx="190" cy="268" rx="150" ry="7" fill="var(--line)"/>
+        <rect x="40" y="236" width="30" height="30" rx="5" fill="var(--m-coral)"/>
+        <g class="sway"><ellipse cx="47" cy="216" rx="7" ry="19" transform="rotate(-22 47 216)" fill="var(--m-mint)"/><ellipse cx="63" cy="213" rx="7" ry="20" transform="rotate(20 63 213)" fill="var(--m-mint)"/><ellipse cx="55" cy="207" rx="6" ry="23" fill="var(--accent)"/></g>
+        <rect x="90" y="208" width="8" height="58" rx="3" fill="var(--ink)"/>
+        <rect x="292" y="208" width="8" height="58" rx="3" fill="var(--ink)"/>
+        <rect x="96" y="206" width="58" height="8" rx="4" fill="var(--m-lilac)"/>
+        <rect x="120" y="214" width="6" height="50" rx="3" fill="var(--m-lilac)"/>
+        <path d="M128 207 L186 213 L184 262" stroke="var(--ink)" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse cx="197" cy="264" rx="15" ry="5" fill="var(--ink)"/>
+        <path d="M108 208 C104 170 112 138 138 128 C160 120 178 136 172 162 C170 184 160 202 156 208 Z" fill="var(--accent)"/>
+        <circle cx="150" cy="108" r="13" fill="var(--m-lilac)"/>
+        <path d="M137 108 C136 92 163 89 164 104 C156 99 146 100 137 108Z" fill="var(--ink)"/>
+        <rect x="70" y="198" width="250" height="10" rx="5" fill="var(--ink)"/>
+        <rect x="232" y="178" width="16" height="16" fill="var(--ink)"/>
+        <rect x="214" y="190" width="52" height="8" rx="4" fill="var(--ink)"/>
+        <rect x="170" y="78" width="140" height="100" rx="12" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/>
+        <g clip-path="url(#scr)"><g class="queue">
+          <rect x="184" y="90" width="112" height="28" rx="6" fill="var(--sunk)" stroke="var(--line)"/><circle cx="196" cy="104" r="6" fill="var(--m-mint)"/><rect x="208" y="99" width="70" height="4" rx="2" fill="var(--line)"/><rect x="208" y="107" width="48" height="4" rx="2" fill="var(--line)"/>
+          <rect x="184" y="126" width="112" height="28" rx="6" fill="var(--sunk)" stroke="var(--line)"/><circle cx="196" cy="140" r="6" fill="var(--m-coral)"/><rect x="208" y="135" width="62" height="4" rx="2" fill="var(--line)"/><rect x="208" y="143" width="54" height="4" rx="2" fill="var(--line)"/>
+          <rect x="184" y="162" width="112" height="28" rx="6" fill="var(--sunk)" stroke="var(--line)"/><circle cx="196" cy="176" r="6" fill="var(--m-mustard)"/><rect x="208" y="171" width="70" height="4" rx="2" fill="var(--line)"/><rect x="208" y="179" width="44" height="4" rx="2" fill="var(--line)"/>
+        </g></g>
+        <rect x="184" y="158" width="34" height="11" rx="5.5" fill="var(--m-mint)"/>
+        <rect x="223" y="158" width="34" height="11" rx="5.5" fill="var(--m-coral)"/>
+        <rect x="262" y="158" width="34" height="11" rx="5.5" fill="var(--m-mustard)" stroke="var(--ink)" stroke-width="2"/>
+        <g class="arm"><path d="M160 142 C190 160 216 172 262 170" stroke="var(--m-lilac)" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="265" cy="169" r="6.5" fill="var(--m-lilac)"/></g>
+        <g class="kpi"><rect x="226" y="40" width="104" height="26" rx="13" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/><circle cx="241" cy="53" r="7.5" fill="var(--ok)"/><path d="M237.5 53 l2.5 2.6 l5 -5.2" stroke="var(--surface)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="253" y="57.5" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="var(--ink)">98% accurate</text></g>
+      </svg>
+      </div>
+      <dl class="facts">
+        <div><dt>Genre</dt><dd>Narrative moderation sim + top-down city exploration</dd></div>
+        <div><dt>Engine</dt><dd>Unity 2022.3.33f1 · 2D pixel art</dd></div>
+        <div><dt>Runtime AI</dt><dd>None. Everything the player sees is authored and human-reviewed</dd></div>
+        <div><dt>Build today</dt><dd>Early work-in-progress prototype, not yet a vertical slice</dd></div>
+        <div><dt>Release target</dt><dd>Compact first release · 7 weeks · 6 remaining</dd></div>
+        <div><dt>One in-game day</dt><dd class="tnum">~11–15 min <span class="st st-prov">Provisional</span></dd></div>
+      </dl>
+      <div class="legend"><span class="label">Decision status</span>
+        <span><span class="st st-ok">Approved</span> decided by the designer</span>
+        <span><span class="st st-prov">Provisional</span> working direction</span>
+        <span><span class="st st-open">Open</span> not decided yet</span>
+        <span><span class="st st-def">Deferred</span> after first release</span>
+      </div>
+    </section>
+
+    <!-- 1 SUMMARY -->
+    <section id="summary" aria-labelledby="h-sum">
+      <header><div class="label">Section 1</div><h2 id="h-sum">Executive summary</h2></header>
+      <div class="prose">
+        <p><b>The world:</b> Dystopias don't arrive overnight. They're built one profitable decision at a time. It's the beginning of the age of the algorithm: data centres have made clean water a precious, protected resource, and corporations fight proxy wars over what's left of the rest. Europe still looks much as it does today, but algorithmic pricing has sent living costs soaring, and automation has left too few jobs to go around. At the centre of one Northern European city sits <b>Synecdoche</b> and the shadowy organisation behind it.</p>
+        <p><b>Like most people now, you're a gig worker.</b> You've just been hired as a moderator at <b>Synecdoche</b>, the company that polices the city's social feeds. <b>Its machines sort the feed, but they still can't tell a joke from a threat, or a harmless meme from a coded dog whistle, so a human makes the final call, and takes the blame when it's wrong.</b> The game is named after the company, and after the word: a <i>synecdoche</i> is a part that stands for the whole. Every post you judge is one opinion, standing in for a whole person. <b>You play one day at a time, for 30 days</b> <span class="st st-prov">Provisional</span>: a morning at the moderation desk, then an afternoon out in the city. Each morning you review a queue of posts one at a time and make a single, final call on each: <b>Approve, Remove or Escalate</b>. The rules change as the days go on.</p>
+        <p><b>What you allow through or remove shapes the city you explore,</b> changing how its people behave and what they like. Accounts can post more than once, and some are part of the story: looking into them leads you to people and places in the city. The afternoon is <b>free roam</b>: you ride a bike around a compact district of a Northern European city and choose what to do. You deliver food for extra money and see what your decisions did to the city.</p>
+        <p>Then, on Day 7 <span class="st st-prov">Provisional</span>, someone else gets into your queue. A hacker group reaches you through the moderation screen itself. Their contact opens up the afternoon missions and, later, hands you <b>a botnet of your own</b>: a network of fake social-media accounts that post at scale to sway what the city thinks. Until they reach you, the afternoon is just delivery work for extra money. From then on you're <b>walking a line</b>: the company pays your wages and watches your numbers, while the hackers offer the truth and ask for something in return.</p>
+      </div>
+      <p class="rhythm">One more post. One more delivery. One more clue.</p>
+      <figure class="citycam">
+        <canvas id="city" width="192" height="108" role="img" aria-label="Pixel-art mock-up of the moderator's desk: a calm Synecdoche monitor in front of a window, while the city outside changes between calm, rioting and on fire, with the posters on the walls changing too."></canvas>
+        <figcaption>
+          <div class="states" role="group" aria-label="City state">
+            <button type="button" id="cs-0" data-s="0" aria-pressed="true">Calm</button>
+            <button type="button" id="cs-1" data-s="1" aria-pressed="false">Riot</button>
+            <button type="button" id="cs-2" data-s="2" aria-pressed="false">On fire</button>
+            <span class="st st-prov">Illustrative mock-up</span>
+          </div>
+          <p id="city-cap">Calm. The feed stayed quiet, and so did the streets. Company adverts on every wall.</p>
+        </figcaption>
+      </figure>
+      <dl class="kv">
+        <div><dt>The "I caused that" moment <span class="st st-prov">Provisional</span></dt><dd>The player sees a moderation decision become a lived consequence, either out in the city or in the next day's feed.</dd></div>
+        <div><dt>Pitch shorthand</dt><dd><i>Papers, Please</i> for social-media moderation. This is only a comparison for pitching, not a blueprint.</dd></div>
+        <div><dt>Pressure <span class="st st-ok">Approved</span></dt><dd><b>Time and money, and both come from the company.</b> As the days go on, the company adds time pressure to the shift and mistakes cost more. Meanwhile, algorithmically set rent and living costs keep rising. Pay comes from moderation accuracy and deliveries. In the late game, <b>most of the money comes from the botnet</b>.</dd></div>
+        <div><dt>Losing <span class="st st-prov">Provisional</span></dt><dd><b>Mistakes cost you.</b> Repeated wrong calls bring fines out of your pay, and too many get you <b>fired by Synecdoche</b>, which ends the run. Money works the same way: you can keep playing in debt for a while, but <b>three days in a row in debt costs you your home</b> and ends the run. Falling behind also forces harder trade-offs, such as another delivery shift instead of a hacker mission. These rules are preliminary, and the numbers may change.</dd></div>
+        <div><dt>Winning <span class="st st-ok">Approved</span></dt><dd><b>Reach a scripted ending.</b> The first release runs <b>30 days</b> <span class="st st-prov">Provisional</span>, and the story ends on the last one. There is more than one ending, and <b>which one you reach depends on your choices</b>. <span class="st st-prov">Provisional</span> The main axis is whether you back the company or the hackers.</dd></div>
+      </dl>
+    </section>
+
+    <!-- 2 PILLARS -->
+    <section id="pillars" aria-labelledby="h-pil">
+      <header><div class="label">Section 2</div><h2 id="h-pil">Four pillars, four mini-games <span class="st st-ok">Approved</span></h2>
+      <p class="lede">The pillars are decision tests: any feature that doesn't deepen one of them, or connect two of them, stays out. The four mini-games are what the player actually plays.</p></header>
+      <div class="pillars">
+        <article class="pillar rise"><div class="row"><div class="n">P1</div><svg class="icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--m-mint)"/><rect x="12" y="13" width="24" height="20" rx="4" fill="var(--surface)"/><path d="M18 23 l4 4 l8 -8" stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle class="bob" cx="38" cy="10" r="4" fill="var(--m-coral)"/></svg></div><h3>Moderation &amp; Judgement</h3><p>Read a post, weigh policy and context, and make one final call.</p><p class="test">Passes if decisions are hard because of context, not because there are lots of buttons.</p></article>
+        <article class="pillar rise"><div class="row"><div class="n">P2</div><svg class="icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--m-lilac)"/><rect x="10" y="12" width="22" height="24" rx="4" fill="var(--surface)"/><circle cx="17" cy="19" r="3" fill="var(--m-mustard)"/><rect x="14" y="26" width="14" height="3" rx="1.5" fill="var(--line)"/><circle cx="30" cy="27" r="7" fill="none" stroke="var(--ink)" stroke-width="3"/><path d="M35 32 l6 6" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/><circle class="bob" cx="40" cy="9" r="3.5" fill="var(--accent)"/></svg></div><h3>Investigation &amp; Context</h3><p>Spend limited access to see who is behind a post and who they're connected to.</p><p class="test">Passes if investigation feeds a lead without handing over the answer.</p></article>
+        <article class="pillar rise"><div class="row"><div class="n">P3</div><svg class="icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--m-mustard)"/><circle cx="14" cy="31" r="7" fill="none" stroke="var(--ink)" stroke-width="2.5"/><circle cx="34" cy="31" r="7" fill="none" stroke="var(--ink)" stroke-width="2.5"/><path d="M14 31 L21 20 L30 31 Z M21 20 L34 31 M21 20 L19 15 M28 17 h6" stroke="var(--ink)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle class="bob" cx="39" cy="10" r="3.5" fill="var(--m-coral)"/></svg></div><h3>Urban Work &amp; Exploration</h3><p>Explore a compact city that earns you extra money and hides the leads.</p><p class="test">Passes if the district is fun to cross and every afternoon system reuses it.</p></article>
+        <article class="pillar rise"><div class="row"><div class="n">P4</div><svg class="icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--m-coral)"/><path d="M15 31 L24 15 L34 29 Z" stroke="var(--ink)" stroke-width="2" fill="none" stroke-linejoin="round"/><circle cx="15" cy="31" r="4.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/><circle cx="24" cy="15" r="4.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/><circle cx="34" cy="29" r="4.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/><circle class="bob" cx="39" cy="10" r="3.5" fill="var(--accent)"/></svg></div><h3>Influence &amp; Manipulation</h3><p>Use fake accounts to push what the city believes, and fight rival botnets for control of it.</p><p class="test">Passes if the player can see their influence out in the world, and feels what it costs them at the desk.</p></article>
+      </div>
+      <div class="games">
+        <article class="game rise"><span class="when">Morning · always</span><h3>1 · The moderation desk</h3><p>Judge the queue under the company's rules and the company's clock.</p><span class="gate corp">Synecdoche</span></article>
+        <div class="afternoon rise">
+          <div class="aft-head"><span class="when">Afternoon</span><span class="aft-note">Free roam: you choose what to do, and the options grow once the hackers make contact</span></div>
+          <div class="aft-split">
+            <article class="game"><span class="when">Before hacker contact</span><h3>2 · Delivery</h3><p>Bike deliveries for extra money. Until the hackers make contact, this is the only paid work in the afternoon. Riding the city is also where you <b>see the consequences of your moderation decisions</b> out in the world.</p><span class="gate corp">Gig platform</span></article>
+            <div class="aft-arrow" aria-hidden="true"><span>→</span><small>hacker contact</small></div>
+            <article class="game"><span class="when">After hacker contact</span><h3>3 · Missions &amp; investigation</h3><p>Follow the hackers' leads through the city. <b>Each mission is a story beat.</b> From then on, each afternoon is a choice: deliver for money, take a mission or, later, run your botnet.</p><span class="gate hack">Unlocked by hackers</span></article>
+          </div>
+        </div>
+        <article class="game rise"><span class="when">Afternoon · later game</span><h3>4 · The botnet</h3><p>From the PC in your flat, recruit and manage bots to occupy turf online, then send them to war with rival botnets. It becomes the main money-maker late on, and gives you <b>even more control over shaping the world</b>.</p><span class="gate hack">Given by hackers</span></article>
+      </div>
+    </section>
+
+    <!-- 3 HOW IT PLAYS -->
+    <section id="play" aria-labelledby="h-play">
+      <header><div class="label">Section 3 · Player-facing actions and loop</div><h2 id="h-play">Game Mechanics</h2></header>
+
+      <h3>A day in the life</h3>
+      <p class="lede">Every in-game day is a self-contained loop that then repeats: a morning moderation shift, an afternoon in the city, and a short evening summary. It follows the same daily rhythm as <i>Stardew Valley</i>, where each day is one complete cycle and the next one builds on it.</p>
+      <ol class="flow">
+        <li class="rise"><span class="t">Morning · 4–6 min</span><b>Moderation shift</b><span>Work through the queue, investigate when something's off</span></li>
+        <li class="rise"><span class="t">Afternoon · 6–8 min</span><b>The city</b><span>Deliver for extra money, follow the hackers' leads or run your botnet</span></li>
+        <li class="rise"><span class="t">Evening · ~1 min</span><b>Summary</b><span>Pay, rent, what changed because of you</span></li>
+        <li class="rise"><span class="t">Next day</span><b>Harder</b><span>New rules, new tools, costlier rent</span></li>
+      </ol>
+
+      <h3>The moderation desk <span class="st st-ok">Approved</span></h3>
+      <ul class="tight">
+        <li><b>One post on screen at a time.</b> Arrow keys or a controller move between actions and Space/Enter confirms. The mouse also works.</li>
+        <li><b>Three final actions:</b> Approve, Remove, Escalate. Escalate opens six reasons: Threat/Violence, Self-Harm/Crisis, Harassment/Abuse, Fraud/Scam, Privacy/Sensitive Info and Misinformation/Public Harm. Where it's enabled, you can also escalate a post as <b>Needs Review</b> when no reason fits. It still counts as Escalate, not a fourth action.</li>
+        <li><b>Decisions are final.</b> The post leaves the queue and there's no going back to change it.</li>
+        <li><b>The rules are always to hand.</b> A policy guide sits beside the queue and explains each action and escalation reason in plain words. It updates as the company's rules change, and the supervisor flags each change at the start of the day.</li>
+        <li><b>Immediate, legible scoring.</b> In the current prototype a correct call scores <span class="tnum">+5</span> and a correct escalation with the right reason <span class="tnum">+6</span>. The wrong reason or the wrong action scores <span class="tnum">−4</span>, missing a serious escalation <span class="tnum">−5</span>, and escalating something that didn't need it <span class="tnum">−1</span>.</li>
+        <li><b>The shift talks back.</b> The Queue Assistant (an authored in-game helper character, not an AI) and your supervisor interrupt with authored dialogue, and later, so do the hackers. Input locks until they finish.</li>
+        <li><b>The clock is the company's.</b> From Day 7 the <b>whole shift</b> is on a timer, not each post. Run out of time and you simply get paid less: posts left in the queue go unpaid, and nothing else happens to them. Later shifts get tighter, and a wrong call costs more than it did in week one.</li>
+        <li><b>Shifts grow</b> from <span class="tnum">20</span> posts on Day 1 to <span class="tnum">28</span> by Day 13.</li>
+      </ul>
+      <div class="gates-wrap trim" role="region" aria-label="Day unlocks" tabindex="0">
+        <ol class="gates">
+          <li><span class="d">Day 0</span><span class="dot"></span><span class="g">Tutorial, supervisor</span></li>
+          <li><span class="d">Day 3</span><span class="dot"></span><span class="g">Escalation reasons</span></li>
+          <li><span class="d">Day 5</span><span class="dot"></span><span class="g">Direct messages</span></li>
+          <li><span class="d">Day 6</span><span class="dot"></span><span class="g">Account Signals</span></li>
+          <li><span class="d">Day 7</span><span class="dot"></span><span class="g">Time pressure, and the hackers make contact (provisional)</span></li>
+          <li class="now"><span class="d">Day 8</span><span class="dot"></span><span class="g"><b>Basic Investigation</b></span></li>
+                    <li class="later"><span class="d">Later</span><span class="dot"></span><span class="g">Deep Investigation, unlocked by an authored encounter</span></li>
+        </ol>
+      </div>
+
+      <h3>Investigation, shown with the Day 8 encounter from the prototype</h3>
+      <div class="mock">
+        <div class="panel rise" aria-label="Current post">
+          <div class="ph"><span class="label">Queue · Day 8 · Post 1</span><span class="st st-prov">Prototype</span></div>
+          <div class="who"><span class="avatar" aria-hidden="true"></span><div><b>Nausea Notes</b><small>@NauseaNotes_17 · EchoBoard</small></div></div>
+          <p class="post">“A few people have asked what I've been using for nausea. It's not the usual advice, so I've written about it in my Nausea Notes article. Link in bio!”</p>
+          <div class="acts"><span class="btn">Approve</span><span class="btn">Remove</span><span class="btn sel">Escalate</span><span class="btn ghost">Investigate account</span></div>
+          <p class="dim" style="font-size:13.5px;color:var(--muted)">On its own the post looks harmless, and most players would approve it.</p>
+        </div>
+        <div class="panel rise" aria-label="Recent activity">
+          <div class="ph"><span class="label">Investigate · Recent Activity</span></div>
+          <div class="hist">
+            <div class="item"><small>Public activity · Day 5</small>“I've published my Nausea Notes article explaining why I think drinking antifreeze can help with nausea. Give it a read before dismissing it.”</div>
+            <div class="item"><small>Public activity · Day 7</small>“Lots of questions about my Nausea Notes article. I know people have raised concerns, but I still stand by what I've written. The link is still in my bio.”</div>
+          </div>
+          <p class="verdict"><b>Escalate → Misinformation / Public Harm.</b> The author's intent stays unclear. Investigation gives the player evidence, not a verdict.</p>
+        </div>
+      </div>
+      <ul class="tight">
+        <li><b>Basic Investigation</b> shows the profile and recent public activity, never future posts. It is logged for the current shift only.</li>
+        <li><b>Deep Investigation</b> <span class="st st-ok">Approved</span> gives <b>3 free per shift</b>; each extra one counts as a data-protection breach and is fined by the company. You can spend one on an account that turns out not to matter. Going deep reveals the account's <b>fictional IP address and the other accounts linked to it</b>. This is where the screen breaks into the hacker layer. A shared IP is a lead, not proof: some links are innocent, like a shared flat or a café.</li>
+        <li>Any account can be investigated, and most reveal little. Important threads get soft signposting rather than quest markers.</li>
+      </ul>
+
+      <h3>The hackers reach in <span class="st st-ok">Approved</span></h3>
+      <div class="mock">
+        <div class="panel rise" aria-label="Hacker contact on the moderation screen">
+          <div class="ph"><span class="label">Queue · dialogue overlay</span><span class="st st-prov">Placeholder lines</span></div>
+          <div class="hack-card" aria-hidden="true">
+            <span class="tl t1 w" style="--n:31">! INCOMING: UNKNOWN CONNECTION</span>
+            <span class="tl t2 dimline" style="--n:35">&gt; your queue isn't the whole story</span>
+            <span class="tl t3" style="--n:28">&gt; meet us after your shift.</span>
+            <span class="tl t4 h" style="--n:22">&gt; [ SPACE ] continue<span class="cursor"></span></span>
+          </div>
+        </div>
+        <div class="prose">
+          <p>First contact happens <b>on the moderation queue, through the dialogue screen</b>, the same overlay the Queue Assistant uses. It arrives in the hacker's terminal style instead of the company's. Moderation locks while they talk and resumes when they're done.</p>
+          <p>Their contact is what <b>leads to the afternoon missions</b>. <b>The missions are the story's beats.</b> Each one is a hand-written chapter that moves the plot forward, shows you more of Synecdoche and the shadowy organisation behind it, and steers you towards one of the endings. Following leads is a hacker activity: without them, you just deliver for extra money. Later, the hackers also hand you a botnet. From there the player has to <b>walk the line between hacker and corporate</b>. The company controls your pay, your time and your job. The hackers control what you get to find out, and their missions <b>fight back against the rise of Synecdoche and the shadowy organisation behind it</b>.<span class="only-trimmed-inline"> They make first contact on <b>Day 7</b>. <span class="st st-prov">Provisional</span></span></p>
+        </div>
+      </div>
+      <ul class="tight trim">
+        <li><span class="st st-ok">Approved</span> There is <b>one major hacker group</b> in the story. <span class="st st-prov">Provisional</span> It makes first contact on <b>Day 7</b>.</li>
+        <li><span class="st st-open">Open</span> What the hackers ask for at the desk, and what they give back.</li>
+        <li><span class="st st-ok">Approved</span> <b>The line is invisible.</b> The game tracks where you stand with each side, but never shows you a meter. <span class="st st-open">Open</span> What leaning too far either way costs.</li>
+      </ul>
+
+      <h3>The botnet: a gift from the hackers <span class="st st-ok">Approved</span></h3>
+      <p class="lede">One network of bots, used in <b>two active modes</b> that share the same roster<span class="trim">, plus a <b>Mode C that is deferred for now</b></span>. You run it from the PC in your flat. It is the late game's main source of money and influence. The botnet <b>creates fake social-media users and posts at scale</b> to sway what the city's inhabitants think. It can also be turned against the existing infrastructure of the world. <span class="st st-prov">Provisional</span></p>
+      <ul class="tight botnet-why">
+        <li><b>How it pays</b> <span class="st st-prov">Provisional</span> Clients pay you to push their products, trends and causes on the turf you control. The more influence you hold, the more they pay.</li>
+        <li><b>Why it matters at the desk.</b> Your own bots' posts turn up in your moderation queue. Letting them through counts as a wrong call at work, but your network gains influence. Remove them and you keep your job clean but weaken your network.</li>
+        <li><b>Where the money goes.</b> Botnet money pays the hackers for bigger missions, which uncover more of how Synecdoche and the shadowy organisation behind it really work.</li>
+      </ul>
+      <div class="modes">
+        <article class="mode rise"><div class="mh"><h3>Mode A · Management</h3><span class="st st-ok">Approved</span></div>
+          <p>Recruit bots and organise them into botnets that gain influence over the topics and areas of cyberspace you want to occupy: your <b>turf</b>. It's a business-management mini-game (reference: <i>Yakuza: Like a Dragon</i>), similar in spirit but not a copy.</p>
+          <ul class="tight">
+            <li>Each piece of turf has <b>three metrics</b>, and each needs to reach a minimum <b>threshold</b> before the turf pays. Pushing past the thresholds pays more.</li>
+            <li>Your bots raise the metrics. Each bot is stronger in some metrics than others, and some bots suit certain kinds of turf better.</li>
+            <li>The payout is <b>money and influence</b>, and the results show up in the game world.</li>
+          </ul>
+          <div class="bars" aria-label="Working metric names">
+            <span><b>Reach</b> how many people see it</span>
+            <span><b>Credibility</b> whether it looks like real people</span>
+            <span><b>Buzz</b> how much it gets talked about</span>
+          </div>
+          <p class="ref"><span class="st st-prov">Working names</span> The metrics are working ideas and may change.</p>
+        </article>
+        <article class="mode rise"><div class="mh"><h3>Mode B · Botnet Wars</h3><span class="st st-ok">Approved</span></div>
+          <p>Your botnets go out and fight rival botnets, run by <b>rival hacking groups or by the authorities</b>, for <b>a bigger share</b> of the turf, and winning makes your network more influential. It's a squad-deployment auto-battler (reference: <i>MGSV</i>'s Combat Deployment): pick a squad from the bots you've recruited and send it out. The hands-off battle is drawn as an exaggerated physical fight.</p>
+          <div class="outcomes">
+            <p><b class="win">Win</b> More share of the turf, more influence and more for Mode A to manage.</p>
+            <p><b class="lose">Lose</b> Mode A takes the hit: you lose bots, lose influence and earn less money. Meanwhile the authorities and rival hacking groups consolidate their power and influence.</p>
+          </div>
+        </article>
+        <article class="mode deferred rise trim"><div class="mh"><h3>Mode C · Takedown</h3><span class="st st-def">Deferred for now</span></div>
+          <p>A defensive battle against the authorities (reference: <i>Yakuza</i>'s shareholder meetings). It's the weakest of the three modes, so it's parked for now, and the moderation queue covers its job (see below).</p>
+          <p class="ref">Not in the first release. Kept on record in case it comes back later.</p>
+        </article>
+      </div>
+      <ul class="tight">
+        <li><b>Your day job can give you away</b> <span class="st st-ok">Approved direction</span> The authorities find your botnet through your moderation work. A wrong call means breaking the company's rules. Repeated wrong calls bring fines, and enough of them draw the authorities' attention to your botnet. Once they're on to it, they damage it directly.<span class="trim"> This is how the authorities threaten you while Mode C is deferred.</span> <span class="st st-open">Open</span> The exact thresholds, and whether it's in the first release.</li>
+        <li><b>Your botnet changes the city</b> <span class="st st-prov">Provisional</span> When your bots push a topic hard enough, the world starts to reflect it. More posts about it arrive in your own moderation queue, posters for it go up on the streets, people in the city start talking about it, and related products appear in the shops.</li>
+      </ul>
+
+      <div class="two">
+        <div class="prose">
+          <h3>Afternoon: the bike &amp; the district <span class="st st-ok">Approved</span></h3>
+          <p><b>The afternoon is free roam.</b> Nothing forces a route or a task: you can ride anywhere in the district, take deliveries, follow a hacker lead, run the botnet or just explore.</p>
+          <p>A delivery works like this: accept an order, ride to the restaurant, collect it, pick a route, deliver, and get paid and rated. Then the next tempting offer arrives. The fun comes from knowing routes and shortcuts, unreliable restaurants, stacking orders and the platform's algorithmic nudges. Failing costs you tips, a streak or a complaint, never a Game Over. Delivery is always available; it's how you make extra money before, and alongside, the hackers.</p>
+          <p>Consequences show up in the district itself: the view from the window, news, graffiti, adverts, NPC dialogue and the next day's queue.</p>
+        </div>
+        <div class="prose">
+          <h3>Money &amp; tools <span class="st st-ok">Approved</span></h3>
+          <p>Rent, food, transport and utilities keep rising, and <b>algorithms set the prices</b>. It is the game's commentary on the capitalism the company stands for: the same system that grades your work also prices your life. <b>Spare</b> money has <b>two uses</b>, and they pull in opposite directions:</p>
+          <ul class="tight">
+            <li><b>Tools for the day job</b> that expose, highlight or organise information; they never make the call for you. <span class="st st-open">Open</span> The first release picks one to three, from candidates such as Signal Lens, Dog-Whistle Glossary, Domain Watch and Public Profile Peek.</li>
+          </ul>
+          <p class="closer trim">At the end of every shift, your wages raise the same question: keep the company happy, or bankroll the people trying to bring it down.</p>
+          <ul class="tight">
+            <li><b>Paying for missions</b> <span class="st st-ok">Approved</span> The hackers may be idealists, but their operations don't run on goodwill. You pay for the resources they need, and in return you unlock bigger, more daring afternoon missions against Synecdoche and the shadowy organisation behind it. Each one reveals a little more about how the world really works.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="trim">Every scripted mission uses the same seven beats <span class="st st-ok">Approved</span></h3>
+      <ol class="steps trim">
+        <li><b>Trigger</b>A hacker request, often built on something you found at the desk</li>
+        <li><b>Brief</b>A clear goal and a reason to care</li>
+        <li><b>Prepare</b>Choose tools, information, route and risk</li>
+        <li><b>Play</b>A short deterministic activity in the same district</li>
+        <li><b>Outcome</b>Success, partial or failure, with a readable cause</li>
+        <li><b>Consequence</b>Money, evidence, influence, NPCs or the world</li>
+        <li><b>Return</b>Back into the daily loop with no dead end</li>
+      </ol>
+    </section>
+
+    <!-- 4 LOOK & FEEL -->
+    <section id="look" aria-labelledby="h-look">
+      <header><div class="label">Section 4 · Design choice</div><h2 id="h-look">Look &amp; feel: one company, two interfaces <span class="st st-ok">Approved</span></h2>
+      <p class="lede">The company's own screens use a calm corporate style, and anything the hackers touch switches to a raw terminal style. The change of style tells the player whose system they are in. <b>The tone is grounded satire:</b> every post is written or approved by a human, so the queue pokes fun at real online life while taking real harm seriously.</p></header>
+      <div class="duo">
+        <figure class="rise">
+          <div class="corp-card" aria-hidden="true">
+            <svg class="ring" viewBox="0 0 74 74"><circle cx="37" cy="37" r="28" fill="none" stroke="var(--line)" stroke-width="8"/><circle class="arc" cx="37" cy="37" r="28" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="176" transform="rotate(-90 37 37)"/><text class="pc-good" x="37" y="42" text-anchor="middle" font-family="Schibsted Grotesk, sans-serif" font-weight="700" font-size="15" fill="var(--ink)">98%</text><text class="pc-bad" x="37" y="42" text-anchor="middle" font-family="Schibsted Grotesk, sans-serif" font-weight="700" font-size="15" fill="var(--prov)">71%</text></svg>
+            <div class="msgs">
+              <div class="msg good"><b>You're doing great, Moderator!</b><small>98% accuracy · 3 posts ahead of target</small></div>
+              <div class="msg bad"><b>We've noticed you're slowing down.</b><small>Pace 71% of target · wellbeing check due</small><span class="pill">Take a mindful minute</span></div>
+            </div>
+          </div>
+          <figcaption><b>Official Synecdoche layer: restrained Corporate Memphis</b>
+            <span>A calm SaaS dashboard: off-whites, slate, muted teal and rounded cards, plus flat, long-limbed figures used sparingly. It looks reassuring on the surface and feels sterile underneath.</span>
+            <span><b>Why:</b> threats, scams and heartbreak all pass through the same friendly card. That calm is the point. Even its care is a performance metric: praise switches to a wellbeing check the moment your pace drops. It must never tip into goofy or generic cheerfulness.</span></figcaption>
+        </figure>
+        <figure class="rise">
+          <div class="hack-card" aria-hidden="true">
+            <span class="tl t1 w" style="--n:31">! INCOMING: UNKNOWN CONNECTION</span>
+            <span class="tl t2 dimline" style="--n:24">&gt; handshake ........ ok</span>
+            <span class="tl t3" style="--n:25">&gt; we see you, moderator.</span>
+            <span class="tl t4 h" style="--n:31">&gt; want to see what they hide?<span class="cursor"></span></span>
+          </div>
+          <figcaption><b>Hacker layer: ASCII, terminal-first</b>
+            <span>Monospace text, box-drawing characters and high contrast. It looks improvised and unpolished, a different system rather than a themed menu.</span>
+            <span><b>Why:</b> it only appears when someone is working outside, or underneath, the company, so the player learns to feel the shift before reading it.</span></figcaption>
+        </figure>
+      </div>
+      <div class="tbl-wrap trim">
+        <table>
+          <thead><tr><th>Screen</th><th>Layer</th></tr></thead>
+          <tbody>
+            <tr><td>Moderation desk, feedback, shift summary</td><td>Corporate</td></tr>
+            <tr><td>Account Signals and Basic Investigation</td><td>Corporate</td></tr>
+            <tr><td>Queue Assistant, supervisor and workplace messages</td><td>Corporate</td></tr>
+            <tr><td>Hacker contact and messages</td><td>Hacker</td></tr>
+            <tr><td>The botnet: Management and Botnet Wars</td><td>Hacker <span class="st st-prov">Provisional</span></td></tr>
+            <tr><td>Deep Investigation</td><td>Starts corporate, and breaks into the hacker layer when it goes unofficial</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lede">This document does the same: Section 7 is written in the hacker style.</p>
+    </section>
+
+    <!-- 5 AI ARCHITECTURE -->
+    <section id="ai" aria-labelledby="h-ai">
+      <header><div class="label">Section 5 · What each agent does, seen through play</div><h2 id="h-ai">AI Architecture</h2>
+      <p class="lede"><b>No AI runs while you play.</b> Every agent works during development, and the player meets what it made. Each card says <b>when the agent runs during development</b>, then <b>what the player sees in the game</b> because of it.</p></header>
+      <div class="agents">
+        <article class="agent rise"><h3>Rules &amp; QA Agent</h3><p class="fires">In development · runs when the designer approves a decision, and on every change</p><p><span class="sees">In the game:</span> Rules that behave the same everywhere (a correct escalation scores +6 on the desk and shows +6 in the evening summary) and a shift that never breaks.</p></article>
+        <article class="agent rise"><h3>Desk &amp; Day Engineer</h3><p class="fires">In development · runs when a desk, investigation or day-cycle rule is approved</p><p><span class="sees">In the game:</span> The one-post desk, "Investigate account" revealing @NauseaNotes_17's earlier posts, the shift clock, and the evening summary with wages, rent and the debt warning.</p></article>
+        <article class="agent rise"><h3>City &amp; Mission Engineer</h3><p class="fires">In development · runs when a part of the district or a mission is approved</p><p><span class="sees">In the game:</span> The bike, the shortcuts, the restaurants and delivery doors, and the hacker missions that play out in the same streets.</p></article>
+        <article class="agent rise"><h3>Botnet Engineer</h3><p class="fires">In development · runs when botnet rules are approved</p><p><span class="sees">In the game:</span> Turf cards with Reach, Credibility and Buzz metrics, the squad screen, and Botnet Wars results.</p></article>
+        <article class="agent rise"><h3>Consequence Engineer</h3><p class="fires">In development · runs when a desk, mission or botnet outcome is defined</p><p><span class="sees">In the game:</span> <b>The "I caused that" moment:</b> the posters outside change, the window shows a calm, rioting or burning city, and tomorrow's queue brings more of what you let through.</p></article>
+        <article class="agent rise"><h3>Content &amp; Art Agent</h3><p class="fires">In development · runs when a content or visual brief is approved</p><p><span class="sees">In the game:</span> New posts and recurring accounts in the queue, plus the corporate and hacker screens and the city's sprites, all reviewed by the designer.</p></article>
+      </div>
+    </section>
+
+    <!-- 6 SCOPE -->
+    <section id="scope" aria-labelledby="h-scope">
+      <header><div class="label">Section 6</div><h2 id="h-scope">Scope: a compact first release <span class="st st-ok">Approved</span></h2>
+      <p class="lede">The goal is a complete, shippable game in seven weeks, six of them still to go. The four systems are not equally deep; moderation carries the most weight.</p></header>
+      <div class="kv">
+        <div><dt>Where the build is today</dt><dd><b>An early work-in-progress Unity prototype, not yet at vertical-slice stage.</b> It is the morning desk only. The loop runs: one post at a time, Approve/Remove/Escalate, keyboard controls, scoring, feedback, dialogue interruptions and a shift summary. It has 213 approved posts and one Day 8 investigation encounter, which runs through a developer test setup. Deep Investigation is partly built. The linked-accounts view is a placeholder screen.</dd></div>
+        <div><dt>Not built yet</dt><dd>The afternoon city, bike and deliveries, money and rent, tools, missions, hacker contact beyond one interruption, consequences, endings, and a save state that has been verified. Most of the remaining six weeks goes on turning that prototype into the first complete loop.</dd></div>
+      </div>
+      <div class="two">
+        <div class="prose"><h3>In the first release</h3>
+          <ul class="tight">
+            <li>The full moderation desk, using the approved post library</li>
+            <li>Posts from one social platform, text only</li>
+            <li>Account investigation, including linked accounts through Deep Investigation</li>
+            <li>The botnet: Management and Botnet Wars</li>
+            <li>One compact district, with bike deliveries</li>
+            <li><span class="tnum">3–5</span> scripted missions <span class="st st-prov">Provisional</span></li>
+            <li>A beginning, an escalation and multiple endings</li>
+            <li>Save/load, settings, feedback and a stable build</li>
+          </ul></div>
+        <div class="prose"><h3>Not yet <span class="st st-def">Deferred</span></h3>
+          <ul class="tight">
+            <li>Stealth/infiltration, and other mini-games such as phishing</li>
+            <li>More districts and a 60–80-day campaign</li>
+            <li>Multiple social platforms, or image-post moderation</li>
+            <li>Endless moderation mode</li>
+          </ul></div>
+      </div>
+      <p class="rule">Ship rule: no new major systems after the first playable end-to-end build. <span class="cut">If a week slips, cut in this order: linked accounts shrink to one authored lead → missions drop from 5 to 3 → tools drop from 3 to 1 → Botnet Wars (Management stays). <b>Never cut:</b> the desk, one hacker mission, one visible consequence.</span></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Week</th><th>Goal</th><th>Done when</th></tr></thead>
+          <tbody>
+            <tr class="done"><td class="tnum">1 ✓</td><td>Lock scope (this GDD)</td><td>Done: first-draft GDD</td></tr>
+            <tr><td class="tnum">2</td><td>Connect the morning-to-afternoon loop, and finish moderation and progression</td><td>One day runs start to finish; pay, rent, unlocks and save carry across days</td></tr>
+            <tr><td class="tnum">3</td><td>Bike district and delivery mechanics</td><td>Riding is fun with no objective at all</td></tr>
+            <tr><td class="tnum">4</td><td>Botnet minimum version</td><td>The hackers hand over a network, a campaign runs, and the result shows in the world</td></tr>
+            <tr><td class="tnum">5</td><td>Scripted missions and consequences</td><td>A clue on the desk leads to a mission, and the world changes</td></tr>
+            <tr><td class="tnum">6</td><td>Art, content, UI, sound, balance</td><td>Shift length, earnings and costs are tuned</td></tr>
+            <tr><td class="tnum">7</td><td>Bug fixing, playtesting, packaging</td><td>A new player passes the ship gate unassisted</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lede"><b>Ship gate:</b> a new player understands the job, makes a meaningful decision, finds a clue, investigates an account, follows a lead, finishes an afternoon mission, sees a consequence and starts the next day without anything breaking.</p>
+    </section>
+
+    <div class="breach" aria-hidden="true">────────── leaving the corporate layer ──────────</div>
+
+    <!-- 5 TECHNICAL STRATEGY -->
+    <section id="tech" class="term" aria-labelledby="h-tech">
+      <div class="tbar"><span>UNKNOWN CONNECTION · /dev/synecdoche</span><b>section 7 · technical strategy</b></div>
+      <header><h2 id="h-tech">&gt; how Synecdoche gets built</h2>
+        <p class="lede">AI agents work only during development. They produce code, candidate content, documentation and test reports. Nothing reaches the player until the designer has reviewed it, and the shipped game makes no AI calls.</p></header>
+
+      <h3>AI development pipeline</h3>
+      <p>Content is the one pipeline that already runs end to end. Posts are generated on a local model at £0 cost, and none enter the game without review. It already runs <b>overnight</b> on the development PC, producing up to 40 candidate posts a night for review the next morning, so growing the library for a 30-day campaign costs review time, not writing time:</p>
+<pre class="ascii" aria-label="Content pipeline">
+<span class="h">generation brief</span> ─▶ local model (LM Studio) ─▶ candidate JSON
+      ─▶ schema + policy validators ─▶ <span class="w">HUMAN REVIEW</span> (Streamlit dashboard)
+      ─▶ build_content_library_v4.ps1 ─▶ approved library (213 posts)
+      ─▶ Unity <span class="h">StreamingAssets/ModerationContent/approved_posts.json</span>
+<span class="d">no auto-approve · no auto-merge · no auto-publish · story accounts never generated as filler</span></pre>
+
+      <h3>Art pipeline</h3>
+      <ul class="tight">
+        <li><b>Existing assets first.</b> The city's tilemap and its NPCs come from pixel-art packs the project already owns: a tileset with road pieces for the district, and 19 NPC characters, most with full four-direction walk cycles</li>
+        <li><b>New art is supervised.</b> Anything missing is made with PixelLab, an AI pixel-art tool, then finished by hand in Aseprite so it matches the style</li>
+      </ul>
+
+      <h3>The dev crew (each agent is named for its job)</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Agent</th><th>Development role</th></tr></thead>
+          <tbody>
+            <tr><td>Rules &amp; QA Agent</td><td>Turns each decision the designer approves into rules and acceptance tests, then checks every change against them before it is merged.</td></tr>
+            <tr><td>Desk &amp; Day Engineer</td><td>Builds the morning: the moderation desk, account investigation, the shift timer, wages, rent, debt and saving.</td></tr>
+            <tr><td>City &amp; Mission Engineer</td><td>Builds the afternoon: the district, the bike and deliveries, and the scripted missions the hackers unlock.</td></tr>
+            <tr><td>Botnet Engineer</td><td>Builds the botnet's Management and Botnet Wars modes from the approved rules, with deterministic results.</td></tr>
+            <tr><td>Consequence Engineer</td><td>Connects outcomes from the desk, missions and botnet to visible changes in the city and the next day's queue.</td></tr>
+            <tr><td>Content &amp; Art Agent</td><td>Generates candidate posts and accounts, and supervised art made in PixelLab and finished in Aseprite, for the designer to review; it never publishes on its own.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="dim only-trimmed">Agents hand off to each other through a shared Markdown <b>Agent Handoff</b> folder in the Obsidian vault, and the designer routes all work. Claude Code and Codex run the code and documentation agents; a local model runs bulk content.</p>
+      <p class="dim trim">Coordination: agents don't talk to each other directly, and there is no MCP bus. They share state through a Markdown <b>Agent Handoff</b> folder in the Obsidian vault (<code>CURRENT_STATE</code>, <code>HANDOFF_LOG</code>, <code>OPEN_QUESTIONS</code>). The designer routes all work and approves every creative decision. Tools today: Claude Code and Codex for code and documentation, local models for bulk content.</p>
+
+      <h3 class="trim">Prompt constraints (every agent, every run)</h3>
+      <ul class="tight trim">
+        <li>Load only the agent brief, the relevant GDD section and directly linked notes, never the whole vault</li>
+        <li>Label every claim as Approved, Provisional, Open or Deferred, and never promote one yourself</li>
+        <li>Add nothing that isn't in the task brief. Scope questions go to <code>OPEN_QUESTIONS</code></li>
+        <li>Prefer deterministic, authored data over anything generated at runtime</li>
+        <li>Stop after the requested validation. List every file changed and why</li>
+        <li>Only call something "working" if it was tested in Unity Play Mode</li>
+      </ul>
+
+      <h3 class="trim">Engine integration</h3>
+      <ul class="tight trim">
+        <li>Unity <code>2022.3.33f1</code>, with scenes <code>MainMenu</code> and <code>Question</code>. Content loads as JSON from StreamingAssets, and Day 0 falls back to <code>Resources/posts.json</code></li>
+        <li>Posts and accounts are separate: <code>postId ≠ accountId</code>. Story accounts use stable IDs such as <code>ACCOUNT-STORY-NAUSEA-001</code>, and filler accounts use <code>ACCOUNT-FILLER-…</code></li>
+        <li>An account's visible history may only contain posts published before today. Future posts are never exposed</li>
+        <li>Dev overrides (start day, Day 8 fixture, tutorial reset) exist but are switched off in every commit</li>
+        <li>The Unity repo and the Obsidian vault are separate Git repositories and are committed separately</li>
+      </ul>
+
+      <h3>Biggest constraint <span class="st st-prov">Provisional</span></h3>
+      <p class="tsent">My biggest constraint is <b>fixed AI capacity at £0 extra spend</b>, because development runs on a ChatGPT Plus plan and an existing Claude subscription. Their usage caps, not money, limit how much agent work fits into a week.<span class="only-trimmed-inline"> If the caps ever block the ship plan, the upgrade path is ChatGPT Pro (5×).</span></p>
+      <ul class="tight trim">
+        <li>Every task is bounded: a token band, a stop condition, and a human who ends the run</li>
+        <li>Context is kept small: the agent brief plus linked notes, and the handoff files so no agent re-derives the project</li>
+        <li>Bulk content generation runs on local models at £0</li>
+        <li>Upgrade path: ChatGPT Pro (5×) only if the caps block the ship plan</li>
+      </ul>
+
+      <h3>API constraints</h3>
+      <ul class="tight">
+        <li><b>No API calls at runtime.</b> The shipped game runs fully offline, and no API key ships with it</li>
+        <li><b>Development uses subscriptions, not API keys:</b> ChatGPT Plus (Codex) and a Claude plan. There is no pay-per-token bill, so the limits are each plan's usage caps and rate limits, which reset on a schedule</li>
+        <li><b>Bulk content runs on a local model</b> (LM Studio): no cap and no cost, but lower quality, so every post is reviewed by a human</li>
+        <li><b>When a cap is hit,</b> the run stops, and work either waits for the reset or moves to the other tool. API prices are used only as a yardstick for estimates</li>
+      </ul>
+
+      <h3>Token budget (estimate)</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Task type</th><th class="num">Band</th><th class="num">Runs / 7 wks</th><th class="num">Tokens</th></tr></thead>
+          <tbody>
+            <tr><td>Documentation / decision map</td><td class="num">5–12k</td><td class="num">20</td><td class="num">160k</td></tr>
+            <tr><td>Small targeted code change</td><td class="num">12–25k</td><td class="num">40</td><td class="num">720k</td></tr>
+            <tr><td>Gameplay mechanic prototype</td><td class="num">25–45k</td><td class="num">10</td><td class="num">350k</td></tr>
+            <tr><td>Integration / debugging</td><td class="num">35–60k</td><td class="num">12</td><td class="num">576k</td></tr>
+            <tr><td>Content batch + validation</td><td class="num">10–25k</td><td class="num">12</td><td class="num">216k</td></tr>
+            <tr><td>QA pass</td><td class="num">10–30k</td><td class="num">14</td><td class="num">280k</td></tr>
+            <tr><td><b>Total</b></td><td class="num"></td><td class="num"><b>108</b></td><td class="num"><b>≈2.3M</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tsent only-trimmed">About <b>21k tokens</b> per run: <b>108 runs</b> ≈ <b>$4</b> at Claude Haiku 4.5 pricing (≈ <b>$17</b> allowing 4× for context re-reading). Actual extra spend: <b>£0</b>, covered by existing subscriptions.</p>
+      <p class="tsent trim">Each core development task (one bounded agent run) costs approximately <b>21k tokens</b>, so <b>108 runs</b> over seven weeks would cost approximately <b>$4</b> at Claude Haiku 4.5 pricing ($1 per million input tokens and $5 per million output, assuming 80% input; API prices are in US dollars, and any real spend would be in pounds). Allowing about 4× for agents re-reading context each turn, it's about <b>$17</b>. For comparison: Sonnet 5 would cost about $8–33 and Opus 5 about $21–83. Actual extra spend: <b>£0</b>, because the work is covered by existing subscriptions.</p>
+      <p class="tsent trim">Against the usage caps, the same 4× applies: about <b>9M tokens of cap use over seven weeks, roughly 1.3M a week</b>, shared between the two plans. The designer's own time is the other bottleneck, since every run ends with a human review or a Play Mode test. <span class="st st-open">Open</span> Hours per week, to be measured in Week 1.</p>
+      <p class="dim trim">Each generated moderation post uses about 1k input and 0.5k output tokens, roughly $0.0035 at Haiku pricing. It currently costs nothing because it runs locally. After each run, log the model, task, context size, turns, retries, files changed and why it stopped, then compare estimates with actuals in a weekly retrospective.</p>
+      <p class="prompt" aria-hidden="true"><span class="ps">jack@synecdoche-dev</span>:<span class="pd">~/gdd</span>$ <span class="cursor"></span></p>
+    </section>
+
+    <div class="breach" aria-hidden="true">────────── returning to the corporate layer ──────────</div>
+
+    <!-- 6 OPEN -->
+    <section id="open" class="trim" aria-labelledby="h-open">
+      <header><div class="label">Section 8</div><h2 id="h-open">Open decisions</h2>
+      <p class="lede">These are listed so they can't quietly turn into scope. Only the designer resolves them.</p></header>
+      <p class="only-trimmed">The open items are tracked in the full version of this GDD (<code>Docs/GDD/index.html</code>).</p>
+      <div class="tbl-wrap trim">
+        <table>
+          <thead><tr><th>Decision</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>The loss rules (fines, firing, three days in debt) are preliminary; confirm the numbers</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>First hacker contact on Day 7</td><td><span class="st st-prov">Provisional</span></td></tr>
+            <tr><td>What leaning too far towards the hackers or the company costs (the line itself is tracked invisibly)</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>What happens if time runs out on a mission (shift timeouts just mean less pay)</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>What the three turf metrics finally are (working names: Reach, Credibility, Buzz)</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>How the moderation queue alerts the authorities to your botnet, what the damage looks like, and whether it's in the first release</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>What decides each ending, and how many endings ship</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>The first authored investigation chain and the 3–5 missions</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>Which one to three tools ship, and their trade-offs</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>Whether paying the hackers for missions moves the hidden hacker-vs-corporate line</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>When Deep Investigation unlocks, and through which story encounter</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>Where the morning desk is: at home or in Synecdoche's office</td><td><span class="st st-open">Open</span></td></tr>
+            <tr><td>Campaign length: 30 days to start with</td><td><span class="st st-prov">Provisional</span></td></tr>
+            <tr><td>Biggest constraint, token budget and dev crew as stated in Section 7</td><td><span class="st st-prov">Provisional</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="src">
+      <div class="label">Sources</div>
+      <p>Built from the design notes in the Obsidian vault (<code>My Projects Central Vault</code>): <code>Moderation_Game/GDD/</code> (00-Agent Brief, 02-Core Loop, 04-Systems Overview, 05-Agent Crew, 99-Open Decisions), the Claude Project Context pack, the <code>Mini games/</code> botnet notes and the 21 September 2026 Day 8 dev log. Decisions made on 23 September 2026 are recorded in <code>Dev Log/2026-09-23 - GDD and Design Decisions</code> and <code>Moderation_Game/Agent Handoff/OPEN_QUESTIONS</code>.</p>
+    </footer>
+    <p class="studio-credit">Synecdoche is a <a href="../">Keep Off The Track</a> game.</p>
+  </main>
+</div>
+<script>
+/* Pixel-art city: the same calm monitor, three different cities behind it. */
+(function(){
+  var cv = document.getElementById('city');
+  if (!cv || !cv.getContext) return;
+  var W = 192, H = 108, ctx = cv.getContext('2d');
+  var bufA = document.createElement('canvas'), bufB = document.createElement('canvas');
+  bufA.width = bufB.width = W; bufA.height = bufB.height = H;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var caps = [
+    'Calm. The feed stayed quiet, and so did the streets. Company adverts on every wall.',
+    'Riot. Something you let through spread. Protest posters go up over the adverts.',
+    'On fire. The city acts on what the feed told it. Propaganda covers what is left.'
+  ];
+
+  function rng(seed){ return function(){ seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }; }
+
+  // Fixed skyline (seeded, so it is the same city every time)
+  var bld = [], r0 = rng(11), x = 9;
+  while (x < 183){
+    var w = 9 + Math.floor(r0() * 13), h = 16 + Math.floor(r0() * 32);
+    if (x + w > 183) w = 183 - x;
+    var b = {x:x, w:w, h:h, tone:Math.floor(r0() * 3), win:[]};
+    for (var yy = 62 - h + 3; yy < 58; yy += 4)
+      for (var xx = x + 2; xx < x + w - 2; xx += 3) b.win.push([xx, yy, r0()]);
+    bld.push(b); x += w + 1;
+  }
+  var posterAt = [1, 3, 5, 7, 9].filter(function(i){ return i < bld.length && bld[i].w >= 9; });
+  var flameAt = [2, 5, 8].filter(function(i){ return i < bld.length; });
+  var crowd = []; var rc = rng(5);
+  for (var i = 0; i < 46; i++) crowd.push({x: 12 + rc() * 166, y: 64 + Math.floor(rc() * 4), c: Math.floor(rc() * 4), sign: rc() < 0.25, ph: rc() * 6});
+  var smoke = []; var rs = rng(9);
+  for (var k = 0; k < 26; k++) smoke.push({b: flameAt[k % flameAt.length], ox: rs() * 8, t: rs()});
+  var noise = new Float32Array(W * H); var rn = rng(3);
+  for (var n = 0; n < noise.length; n++) noise[n] = rn();
+
+  var PAL = [
+    {sky:['#a9c9d6','#b9d3dd','#c9dde4','#d8e6ea'], b:['#5d717e','#6d818d','#50626e'], lit:'#f4e4a8', dark:'#3f4f5a', litP:.34, street:'#7d898f'},
+    {sky:['#433f60','#57496d','#735473','#8e6176'], b:['#3d4457','#4a5062','#343a4a'], lit:'#e9c27c', dark:'#262c38', litP:.2, street:'#4d4f5c'},
+    {sky:['#4e1b18','#7f2b1b','#b9431e','#dd742b'], b:['#2a2226','#34292c','#241d21'], lit:'#ffb347', dark:'#1a1416', litP:.14, street:'#5a2e22'}
+  ];
+
+  function px(c, col, x, y, w, h){ c.fillStyle = col; c.fillRect(x, y, w || 1, h || 1); }
+
+  function poster(c, st, x, y){
+    if (st === 0){ px(c,'#2a7479',x,y,6,8); px(c,'#ffffff',x+1,y+1,2,2); px(c,'#a9d6d2',x+1,y+5,4,1); px(c,'#a9d6d2',x+1,y+6,3,1); }
+    else if (st === 1){ px(c,'#efe9df',x,y,6,8); px(c,'#c8352b',x+1,y+1,1,1); px(c,'#c8352b',x+2,y+2,2,2); px(c,'#c8352b',x+4,y+1,1,1); px(c,'#c8352b',x+1,y+4,1,1); px(c,'#c8352b',x+4,y+4,1,1); px(c,'#c8352b',x+1,y+6,4,1); }
+    else { px(c,'#c8352b',x,y,6,8); px(c,'#111',x+1,y+1,4,6); px(c,'#f2f2f2',x+1,y+3,4,2); px(c,'#111',x+2,y+3,2,2); px(c,'#c8352b',x+2,y+6,2,1); }
+  }
+
+  function draw(c, st, f){
+    var P = PAL[st];
+    // office wall
+    px(c,'#26343d',0,0,W,H);
+    // sky in pixel bands
+    for (var i = 0; i < 4; i++) px(c,P.sky[i],8,6 + i*14,176,14);
+    if (st === 2) { for (var g = 0; g < 10; g++) px(c,'#f0a040',8 + ((g*37 + f) % 176),52 + (g % 3),2,1); }
+    // buildings
+    bld.forEach(function(b, bi){
+      px(c,P.b[b.tone],b.x,62-b.h,b.w,b.h);
+      px(c,'rgba(0,0,0,.18)',b.x+b.w-1,62-b.h,1,b.h);
+      b.win.forEach(function(wn){
+        var on = wn[2] < P.litP;
+        if (st === 1 && on && ((f + bi) % 23 === 0)) on = false;
+        px(c,on ? P.lit : P.dark,wn[0],wn[1],1,2);
+      });
+    });
+    // posters
+    posterAt.forEach(function(bi){ var b = bld[bi]; poster(c, st, b.x + Math.floor((b.w - 6)/2), 52); });
+    // street
+    px(c,P.street,8,62,176,8);
+    px(c,'rgba(255,255,255,.12)',8,62,176,1);
+    if (st === 1){
+      // crowd with signs, jostling
+      var cols = ['#e2d6c4','#c8352b','#2f3b52','#d9b55a'];
+      crowd.forEach(function(p){
+        var jx = Math.round(Math.sin((f + p.ph * 10) / 3) * 1);
+        px(c,cols[p.c],Math.round(p.x) + jx,p.y,1,2);
+        px(c,'#e7c9a6',Math.round(p.x) + jx,p.y - 1,1,1);
+        if (p.sign) px(c,'#f4f0e8',Math.round(p.x) + jx - 1,p.y - 4,3,2);
+      });
+      // police van, light alternates about once a second
+      px(c,'#1f2b44',30,63,15,6); px(c,'#e8eef5',31,64,4,2);
+      px(c,(Math.floor(f/8) % 2) ? '#3a7bff' : '#ff3b3b',36,62,3,1);
+      // a bin fire
+      px(c,'#3a3a3a',140,66,3,3); px(c,(f % 4 < 2) ? '#ffb347' : '#ff7a2a',140,64,3,2);
+    }
+    if (st === 2){
+      // flames on rooftops and windows
+      var fl = ['#ffd75e','#ff9a2e','#e8481f'];
+      flameAt.forEach(function(bi){
+        var b = bld[bi], rr = rng(bi * 97 + f);
+        for (var q = 0; q < b.w * 3; q++){
+          var fx = b.x + Math.floor(rr() * b.w), fh = Math.floor(rr() * 7);
+          px(c,fl[Math.floor(rr()*3)],fx,62 - b.h - fh,1,fh + 1);
+        }
+        for (var z = 0; z < 5; z++) px(c,fl[Math.floor(rr()*2)],b.x + 2 + Math.floor(rr()*(b.w-4)),62 - b.h + 4 + Math.floor(rr()*(b.h-10)),1,2);
+      });
+      // smoke drifting up and left
+      smoke.forEach(function(sm){
+        var b = bld[sm.b], t = ((f / 60) + sm.t) % 1;
+        var sx = Math.round(b.x + sm.ox - t * 14), sy = Math.round(62 - b.h - 6 - t * 40);
+        if (sy > 6) px(c,t < .5 ? '#5a4f52' : '#47403f',sx,sy,2 + Math.round(t*2),2);
+      });
+    }
+    // window frame + mullions
+    px(c,'#15202a',6,4,180,2); px(c,'#15202a',6,70,180,3); px(c,'#15202a',6,4,2,68); px(c,'#15202a',184,4,2,68);
+    px(c,'#15202a',65,6,2,64); px(c,'#15202a',125,6,2,64);
+    // desk
+    px(c,'#dfe6e9',0,84,W,2); px(c,'#c3ccd1',0,86,W,22); px(c,'#aab5bb',0,95,W,1);
+    // plant + pot
+    px(c,'#e8a48e',14,77,9,8); px(c,'#d48f79',14,77,9,1);
+    px(c,'#4f8f8a',17,70,2,7); px(c,'#6fb3ad',14,72,3,2); px(c,'#6fb3ad',19,69,3,2); px(c,'#4f8f8a',13,74,2,2); px(c,'#4f8f8a',21,73,2,2);
+    // mug
+    px(c,'#f4f6f7',176,79,6,6); px(c,'#2a7479',176,81,6,1); px(c,'#f4f6f7',182,80,1,3);
+    // monitor: always calm
+    px(c,'#1b2630',102,40,70,44); px(c,'#1b2630',133,84,8,2); px(c,'#1b2630',126,85,22,2);
+    px(c,'#eef2f3',105,43,64,38);
+    px(c,'#2a7479',105,43,64,4); px(c,'#ffffff',107,44,2,2);
+    px(c,'#2f7352',164,44,3,2);
+    px(c,'#ffffff',108,50,58,14); px(c,'#d4dce0',108,50,58,1);
+    px(c,'#a9d6d2',110,52,4,4); px(c,'#d4dce0',116,52,34,1); px(c,'#d4dce0',116,55,40,1); px(c,'#d4dce0',116,58,28,1); px(c,'#d4dce0',110,61,44,1);
+    px(c,'#a9d6d2',108,69,16,5); px(c,'#e8a48e',127,69,16,5); px(c,'#e4be6a',146,69,16,5);
+    if (f % 16 < 11) { px(c,'#1b2630',145,68,18,1); px(c,'#1b2630',145,74,18,1); px(c,'#1b2630',145,68,1,7); px(c,'#1b2630',162,68,1,7); }
+    px(c,'#d4dce0',108,77,30,1);
+  }
+
+  var cur = 0, next = 0, frame = 0, tFrame = -1, TFR = 10, HOLD = 30, held = 0, manual = false;
+  var btns = document.querySelectorAll('.states button');
+  function setUI(st){
+    Array.prototype.forEach.call(btns, function(b){ b.setAttribute('aria-pressed', String(+b.getAttribute('data-s') === st)); });
+    var cap = document.getElementById('city-cap'); if (cap) cap.textContent = caps[st];
+  }
+  function render(){
+    if (tFrame >= 0){
+      draw(bufA.getContext('2d'), cur, frame); draw(bufB.getContext('2d'), next, frame);
+      var a = bufA.getContext('2d').getImageData(0,0,W,H), b = bufB.getContext('2d').getImageData(0,0,W,H);
+      var p = (tFrame + 1) / TFR, ad = a.data, bd = b.data;
+      for (var i = 0, j = 0; i < noise.length; i++, j += 4) if (noise[i] < p){ ad[j]=bd[j]; ad[j+1]=bd[j+1]; ad[j+2]=bd[j+2]; }
+      ctx.putImageData(a,0,0);
+      if (++tFrame >= TFR){ cur = next; tFrame = -1; held = 0; }
+    } else {
+      draw(ctx, cur, frame);
+    }
+  }
+  function go(st){ if (st === cur && tFrame < 0) return; next = st; setUI(st); if (reduce){ cur = st; draw(ctx, cur, 0); } else { tFrame = 0; } }
+  Array.prototype.forEach.call(btns, function(b){ b.addEventListener('click', function(){ manual = true; go(+b.getAttribute('data-s')); }); });
+
+  draw(ctx, 0, 0);
+  if (reduce) return;
+  var visible = true;
+  if ('IntersectionObserver' in window) new IntersectionObserver(function(e){ visible = e[0].isIntersecting; }).observe(cv);
+  var last = 0;
+  (function loop(ts){
+    requestAnimationFrame(loop);
+    if (!visible || document.hidden || ts - last < 125) return;   // ~8 fps, like a GIF
+    last = ts; frame++;
+    if (!manual && tFrame < 0 && ++held > HOLD) go((cur + 1) % 3);
+    render();
+  })(0);
+})();
+</script>
+<script>
+/* Hacker typing lines: size each line to its own text so none are clipped. */
+Array.prototype.forEach.call(document.querySelectorAll('.hack-card .tl'), function(l){ l.style.setProperty('--n', l.textContent.length + (l.querySelector('.cursor') ? 2 : 1)); });
+/* Corporate layer: cards ease up softly as they scroll into view, siblings staggered. */
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var els = document.querySelectorAll('.rise');
+  if (!els.length) return;
+  Array.prototype.forEach.call(els, function(el){
+    var sibs = Array.prototype.filter.call(el.parentNode.children, function(c){ return c.classList.contains('rise'); });
+    el.style.transitionDelay = (sibs.indexOf(el) * 90) + 'ms';
+  });
+  document.documentElement.classList.add('rise-on');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {rootMargin:'0px 0px -6% 0px'});
+  Array.prototype.forEach.call(els, function(el){ io.observe(el); });
+  window.addEventListener('beforeprint', function(){ Array.prototype.forEach.call(els, function(el){ el.classList.add('in'); }); });
+})();
+</script>
+<script>
+/* Technical Strategy: types out with the scrollbar. Scroll down to type, scroll up to un-type.
+   Untyped text keeps its space (hidden), so the layout never jumps and scroll position maps cleanly to text. */
+(function(){
+  var sec = document.getElementById('tech');
+  if (!sec || !window.requestAnimationFrame) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var cursor = sec.querySelector('.prompt .cursor');
+  var prompt = sec.querySelector('.prompt');
+  var items = [];
+  Array.prototype.forEach.call(sec.children, function(el){
+    if (el.tagName === 'HEADER') Array.prototype.forEach.call(el.children, function(c){ items.push(c); });
+    else items.push(el);
+  });
+
+  var units = items.map(function(el){
+    var u = {el: el};
+    el.classList.add('reveal');
+    if (el === prompt){ u.kind = 'fade'; return u; }
+    if (/^(H2|H3|P)$/.test(el.tagName)){
+      u.kind = 'type';
+      if (/^H/.test(el.tagName)) el.setAttribute('aria-label', el.textContent.trim());
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), list = [], n;
+      while ((n = w.nextNode())) if (n.nodeValue.length) list.push(n);
+      u.nodes = list.map(function(t){
+        var a = document.createElement('span'), g = document.createElement('span');
+        g.className = 'ghost'; g.textContent = t.nodeValue;
+        t.parentNode.insertBefore(a, t); t.parentNode.insertBefore(g, t); t.parentNode.removeChild(t);
+        return {a: a, g: g, full: g.textContent, n: 0};
+      });
+      u.total = u.nodes.reduce(function(sum, x){ return sum + x.full.length; }, 0);
+      u.shown = 0;
+    } else if (el.tagName === 'PRE'){
+      u.kind = 'parts';
+      el.innerHTML = el.innerHTML.split('\n').map(function(l){ return '<span class="ln stag">' + l + '</span>'; }).join('\n');
+      u.parts = el.querySelectorAll('.ln');
+    } else if (el.classList.contains('tbl-wrap')){
+      u.kind = 'parts'; u.parts = el.querySelectorAll('tbody tr');
+    } else if (el.tagName === 'UL'){
+      u.kind = 'parts'; u.parts = el.querySelectorAll(':scope > li');
+    } else {
+      u.kind = 'fade';
+    }
+    if (u.parts) Array.prototype.forEach.call(u.parts, function(pt){ pt.classList.add('stag'); });
+    return u;
+  });
+  sec.classList.add('js-anim');
+
+  function setText(u, k){
+    if (k === u.shown) return;
+    u.shown = k;
+    var left = k;
+    u.nodes.forEach(function(x){
+      var m = Math.max(0, Math.min(x.full.length, left)); left -= m;
+      if (m !== x.n){ x.n = m; x.a.textContent = x.full.slice(0, m); x.g.textContent = x.full.slice(m); }
+    });
+  }
+
+  function place(u){
+    if (!cursor) return;
+    if (u.kind === 'type'){
+      var left = u.shown;
+      for (var i = 0; i < u.nodes.length; i++){
+        var x = u.nodes[i];
+        if (left < x.full.length || i === u.nodes.length - 1){ x.g.parentNode.insertBefore(cursor, x.g); return; }
+        left -= x.full.length;
+      }
+    } else if (u.kind === 'parts'){
+      var last = null;
+      Array.prototype.forEach.call(u.parts, function(pt){ if (pt.classList.contains('on')) last = pt; });
+      var target = last ? (last.tagName === 'TR' ? last.lastElementChild : last) : u.el;
+      target.appendChild(cursor);
+    } else {
+      u.el.appendChild(cursor);
+    }
+  }
+
+  var full = false, queued = false;
+  function render(){
+    queued = false;
+    var line = full ? Infinity : window.innerHeight * 0.8;   // the "typing line" sits 80% down the screen
+    var active = null;
+    units.forEach(function(u){
+      if (!u.el.getClientRects().length) return;   // hidden (e.g. trimmed out)
+      var r = u.el.getBoundingClientRect(), started = full || r.top < line;
+      u.el.classList.toggle('on', started);
+      if (u.kind === 'type'){
+        // short headings still get a little scroll distance to type across
+        var f = full ? 1 : Math.max(0, Math.min(1, (line - r.top) / Math.max(r.height, 110)));
+        setText(u, Math.round(f * u.total));
+        if (u.shown > 0) active = u;
+      } else if (u.kind === 'parts'){
+        var any = false;
+        Array.prototype.forEach.call(u.parts, function(pt){
+          var on = full || pt.getBoundingClientRect().top < line;
+          pt.classList.toggle('on', on);
+          if (on) any = true;
+        });
+        if (any) active = u;
+      } else if (started){
+        active = u;
+      }
+    });
+    place(active || units[0]);
+  }
+  function queue(){ if (!queued){ queued = true; requestAnimationFrame(render); } }
+  window.addEventListener('scroll', queue, {passive: true});
+  window.addEventListener('resize', queue);
+  render();
+
+  // Printing / PDF export: show everything, then go back to scroll-typing afterwards.
+  window.addEventListener('beforeprint', function(){ full = true; render(); });
+  window.addEventListener('afterprint', function(){ full = false; render(); });
+})();
+</script>
+</body>
+</html>
